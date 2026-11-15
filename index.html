@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Panda Wishlist — Shared Wishes</title>
+  <link rel="icon" type="image/png" href="./panda-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep-space: #030712;
+      --glass-slate: rgba(30, 41, 59, 0.56);
+      --glass-surface-dark: rgba(15, 23, 42, 0.78);
+      --electric-cyan: #38BDF8;
+      --deep-cyan: #0284C7;
+      --mint-emerald: #2DD4BF;
+      --warning-amber: #FBBF24;
+      --neon-rose: #F43F5E;
+      --indigo-glow: #6366F1;
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-tertiary: #64748B;
+      --border-specular: rgba(255, 255, 255, 0.14);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-deep-space);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      padding-bottom: 56px;
+    }
+
+    .ambient-orb-1, .ambient-orb-2 {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(80px);
+    }
+    .ambient-orb-1 {
+      width: 420px; height: 420px;
+      top: -120px; left: -90px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.16) 0%, transparent 70%);
+    }
+    .ambient-orb-2 {
+      width: 380px; height: 380px;
+      bottom: -100px; right: -80px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.14) 0%, transparent 70%);
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    .glass-card {
+      background: linear-gradient(180deg, var(--glass-slate) 0%, var(--glass-surface-dark) 100%);
+      border: 1px solid var(--border-specular);
+      border-top-color: rgba(255, 255, 255, 0.24);
+      border-bottom-color: rgba(56, 189, 248, 0.12);
+      border-radius: 18px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    }
+
+    .header-card {
+      padding: 20px;
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      box-shadow: 0 0 22px rgba(56, 189, 248, 0.20);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .title-block { flex: 1; min-width: 0; }
+    .brand-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--electric-cyan);
+      margin-bottom: 4px;
+    }
+
+    h1 {
+      font-size: clamp(20px, 4vw, 28px);
+      font-weight: 800;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .stat-pill {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .stat-num.cyan { color: var(--electric-cyan); }
+    .stat-num.mint { color: var(--mint-emerald); }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .search-input-wrap {
+      flex: 1 1 220px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      padding: 11px 14px 11px 38px;
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--electric-cyan);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.18);
+    }
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-tertiary);
+      font-size: 15px;
+      pointer-events: none;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-radius: 11px;
+      padding: 9px 13px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(30, 41, 59, 0.65);
+      color: var(--text-primary);
+      text-decoration: none;
+      transition: transform 0.12s ease, border-color 0.2s, background 0.2s;
+      user-select: none;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:hover { border-color: rgba(56, 189, 248, 0.45); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--deep-cyan), var(--electric-cyan));
+      color: #030712;
+      border-color: rgba(56, 189, 248, 0.8);
+      font-weight: 700;
+    }
+    .btn-mint {
+      background: rgba(45, 212, 191, 0.16);
+      border-color: rgba(45, 212, 191, 0.50);
+      color: var(--mint-emerald);
+    }
+    .btn-amber {
+      background: rgba(251, 191, 36, 0.15);
+      border-color: rgba(251, 191, 36, 0.48);
+      color: var(--warning-amber);
+    }
+    .btn-rose {
+      background: rgba(244, 63, 94, 0.14);
+      border-color: rgba(244, 63, 94, 0.40);
+      color: var(--neon-rose);
+    }
+
+    .chips-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 16px;
+      scrollbar-width: none;
+    }
+    .chips-row::-webkit-scrollbar { display: none; }
+
+    .chip {
+      flex-shrink: 0;
+      padding: 7px 13px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(30, 41, 59, 0.50);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .chip.active {
+      background: rgba(56, 189, 248, 0.20);
+      border-color: var(--electric-cyan);
+      color: var(--electric-cyan);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 16px;
+    }
+
+    .wish-card {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: transform 0.18s ease, border-color 0.2s;
+    }
+    .wish-card.picked {
+      border-color: rgba(45, 212, 191, 0.42);
+    }
+
+    .wish-image-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      background: #090F1E;
+      overflow: hidden;
+      cursor: zoom-in;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .wish-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.25s ease;
+    }
+    .wish-image-wrap:hover .wish-image { transform: scale(1.03); }
+    .zoom-badge {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      background: rgba(3, 7, 18, 0.76);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(8px);
+      color: var(--text-primary);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 999px;
+    }
+
+    .wish-body {
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .badges-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .pill-store {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: var(--electric-cyan);
+    }
+    .pill-type {
+      background: rgba(99, 102, 241, 0.16);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #A5B4FC;
+    }
+    .pill-price {
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      color: var(--warning-amber);
+    }
+    .pill-must {
+      background: rgba(244, 63, 94, 0.16);
+      border: 1px solid rgba(244, 63, 94, 0.45);
+      color: #FDA4AF;
+    }
+
+    .wish-title {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--text-primary);
+      word-break: break-word;
+    }
+
+    .wish-note {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: rgba(3, 7, 18, 0.42);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 9px 11px;
+    }
+
+    .picked-banner {
+      background: rgba(45, 212, 191, 0.14);
+      border: 1px solid rgba(45, 212, 191, 0.40);
+      border-radius: 11px;
+      padding: 8px 11px;
+      font-size: 12px;
+      color: var(--mint-emerald);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .picked-msg {
+      color: var(--text-secondary);
+      font-size: 11.5px;
+      font-style: italic;
+    }
+
+    .actions-row {
+      margin-top: auto;
+      padding-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .actions-row .btn { flex: 1 1 auto; padding: 8px 10px; font-size: 12.5px; }
+
+    .empty-state {
+      padding: 44px 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Lightbox */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(3, 7, 18, 0.90);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .lightbox-content {
+      max-width: 96vw;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+    .lightbox-img {
+      max-width: 92vw;
+      max-height: 72vh;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      object-fit: contain;
+      transition: transform 0.2s ease;
+      cursor: zoom-in;
+    }
+    .lightbox-img.zoomed {
+      transform: scale(1.75);
+      cursor: zoom-out;
+    }
+
+    .dialog-card {
+      width: 100%;
+      max-width: 440px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .radio-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .radio-option {
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(15, 23, 42, 0.72);
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+    }
+    .radio-option.selected {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: var(--electric-cyan);
+      color: var(--electric-cyan);
+    }
+
+    .text-input {
+      width: 100%;
+      background: rgba(3, 7, 18, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 11px;
+      padding: 11px 12px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .text-input:focus { border-color: var(--electric-cyan); }
+
+    .toast {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%) translateY(90px);
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid rgba(56, 189, 248, 0.55);
+      color: var(--text-primary);
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+      z-index: 200;
+      transition: transform 0.25s ease;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 28px;
+      color: var(--text-tertiary);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-orb-1"></div>
+  <div class="ambient-orb-2"></div>
+
+  <div class="container">
+    <div id="headerCard" class="glass-card header-card">
+      <div class="header-top">
+        <img src="./panda-icon.png" alt="Panda Wishlist" class="brand-icon" />
+        <div class="title-block">
+          <div class="brand-tag">🎁 Panda Wishlist</div>
+          <h1 id="listTitle">Loading wishlist...</h1>
+          <div id="listDesc" class="subtitle">Fetching shared wishes from the cloud...</div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-pill">
+          <div id="statTotal" class="stat-num">-</div>
+          <div class="stat-label">Total Wishes</div>
+        </div>
+        <div class="stat-pill">
+          <div id="statAvailable" class="stat-num cyan">-</div>
+          <div class="stat-label">Available</div>
+        </div>
+        <div class="stat-pill">
+          <div id="statPicked" class="stat-num mint">-</div>
+          <div class="stat-label">Picked 🎁</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="controlsBar" style="display:none;">
+      <div class="toolbar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input id="searchInput" type="search" class="search-input" placeholder="Search wishes, stores, notes..." />
+        </div>
+        <button id="refreshBtn" class="btn" title="Refresh wishes and picks">↻ Refresh</button>
+      </div>
+
+      <div class="chips-row" id="filterChips">
+        <button class="chip active" data-filter="ALL">All</button>
+        <button class="chip" data-filter="AVAILABLE">Available</button>
+        <button class="chip" data-filter="PICKED">Picked 🎁</button>
+        <button class="chip" data-filter="LINK">Links 🔗</button>
+        <button class="chip" data-filter="IMAGE">Images 🖼️</button>
+        <button class="chip" data-filter="TEXT">Text 📝</button>
+        <button class="chip" data-filter="MUST_HAVE">Must-Have ⭐</button>
+      </div>
+    </div>
+
+    <div id="contentArea"></div>
+
+    <div class="footer-note">
+      Powered by Panda Wishlist • Free Zero-Login Sharing via GitHub Pages
+    </div>
+  </div>
+
+  <!-- Full-Screen Image Lightbox -->
+  <div id="lightboxModal" class="modal-backdrop">
+    <div class="lightbox-content">
+      <img id="lightboxImg" src="" alt="Full screen preview" class="lightbox-img" />
+      <div id="lightboxCaption" style="font-size:14px; font-weight:600; text-align:center; max-width:90vw;"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+        <button id="lightboxZoomBtn" class="btn">🔍 Toggle Zoom</button>
+        <button id="lightboxDownloadBtn" class="btn btn-primary">⬇ Download Image</button>
+        <button id="lightboxCloseBtn" class="btn btn-rose">✕ Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pick a Wish Modal -->
+  <div id="pickModal" class="modal-backdrop">
+    <div class="glass-card dialog-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="font-size:18px; font-weight:800;">🎁 Pick this Wish</h2>
+        <button id="pickCloseBtn" class="btn" style="padding:5px 10px;">✕</button>
+      </div>
+      <div id="pickItemTitle" style="font-size:13.5px; color:var(--electric-cyan); font-weight:600;"></div>
+      <div style="font-size:12.5px; color:var(--text-secondary);">
+        Let others opening this wishlist know you're getting it so there are no duplicate gifts!
+      </div>
+
+      <div class="radio-group">
+        <div id="modeNamed" class="radio-option selected">🙋 Enter My Name</div>
+        <div id="modeSecret" class="radio-option">🤫 Secret Surprise</div>
+      </div>
+
+      <div id="nameInputWrap">
+        <input id="pickerNameInput" type="text" class="text-input" placeholder="Your name (e.g. Rahul)" maxlength="40" />
+      </div>
+
+      <input id="pickerMessageInput" type="text" class="text-input" placeholder="Optional note (e.g. Ordered! Arriving Friday)" maxlength="120" />
+
+      <div style="display:flex; gap:10px;">
+        <button id="pickCancelBtn" class="btn" style="flex:1;">Cancel</button>
+        <button id="pickConfirmBtn" class="btn btn-primary" style="flex:1.4;">Confirm Pick 🎁</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const REPO_OWNER = "AlchemistPanda";
+    const REPO_NAME = "Panda-Wishlist";
+    const BRANCH = "gh-pages";
+
+    let currentWishlistId = null;
+    let currentWishlist = null;
+    let liveClaimsMap = {};
+    let activeFilter = "ALL";
+    let searchQuery = "";
+    let pickTargetItemId = null;
+    let pickSecretMode = false;
+    let lightboxImageSrc = "";
+    let lightboxFilename = "panda-wish.jpg";
+
+    const toastEl = document.getElementById("toast");
+    let toastTimer = null;
+
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2600);
+    }
+
+    function getWishlistIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("id");
+      if (q && q.trim()) return q.trim();
+      if (window.location.hash && window.location.hash.length > 1) {
+        return window.location.hash.slice(1).trim();
+      }
+      return null;
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function decodeBase64Utf8(base64) {
+      const bin = atob(base64.replace(/\n/g, ""));
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return new TextDecoder("utf-8").decode(bytes);
+    }
+
+    async function fetchWishlistJson(id) {
+      const cb = Date.now();
+      const candidates = [
+        // 1. GitHub Contents API (instantaneous, zero CDN delay)
+        async () => {
+          const r = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/lists/${encodeURIComponent(id)}/wishlist.json?ref=${BRANCH}&cb=${cb}`, { cache: "no-store" });
+          if (!r.ok) throw new Error("API " + r.status);
+          const meta = await r.json();
+          return JSON.parse(decodeBase64Utf8(meta.content));
+        },
+        // 2. Raw GitHub URL
+        async () => {
+          const r = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/lists/${encodeURIComponent(id)}/wishlist.json?t=${cb}`, { cache: "no-store" });
+          if (!r.ok) throw new Error("Raw " + r.status);
+          return await r.json();
+        },
+        // 3. Relative GitHub Pages URL
+        async () => {
+          const r = await fetch(`./lists/${encodeURIComponent(id)}/wishlist.json?t=${cb}`, { cache: "no-store" });
+          if (!r.ok) throw new Error("Local " + r.status);
+          return await r.json();
+        }
+      ];
+
+      let best = null;
+      for (const fn of candidates) {
+        try {
+          const data = await fn();
+          if (data && typeof data === "object") {
+            if (!best || (data.updatedAt || 0) > (best.updatedAt || 0)) {
+              best = data;
+            }
+            if (best && candidates.indexOf(fn) === 0) break;
+          }
+        } catch (_) {}
+      }
+      return best;
+    }
+
+    async function fetchLiveClaims(topic) {
+      const claims = {};
+      if (!topic) return claims;
+      try {
+        const res = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}/json?poll=1&since=all`, { cache: "no-store" });
+        if (!res.ok) return claims;
+        const text = await res.text();
+        const lines = text.split("\n").filter(Boolean);
+        for (const line of lines) {
+          try {
+            const evt = JSON.parse(line);
+            if (evt.event !== "message" || !evt.message) continue;
+            const payload = JSON.parse(evt.message);
+            if (!payload.itemId) continue;
+            const ts = payload.timestamp || (evt.time ? evt.time * 1000 : 0);
+            const prev = claims[payload.itemId];
+            if (!prev || ts >= prev.timestamp) {
+              claims[payload.itemId] = {
+                action: payload.action || "pick",
+                pickedByName: payload.pickedByName || "Secret Surprise 🤫",
+                isSecret: !!payload.isSecret,
+                message: payload.message || "",
+                timestamp: ts
+              };
+            }
+          } catch (_) {}
+        }
+      } catch (_) {}
+
+      // Merge any local browser picks made just moments ago
+      try {
+        const localKey = `panda_claims_${currentWishlistId}`;
+        const localData = JSON.parse(localStorage.getItem(localKey) || "{}");
+        for (const [itemId, val] of Object.entries(localData)) {
+          const prev = claims[itemId];
+          if (!prev || (val.timestamp || 0) >= prev.timestamp) {
+            claims[itemId] = val;
+          }
+        }
+      } catch (_) {}
+
+      return claims;
+    }
+
+    function resolveImageUrl(item) {
+      if (item.imagePath) {
+        return `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/lists/${encodeURIComponent(currentWishlistId)}/${item.imagePath}`;
+      }
+      if (item.remoteImageUrl) return item.remoteImageUrl;
+      return "";
+    }
+
+    function mergeItemPickState(item) {
+      const claim = liveClaimsMap[item.id];
+      const baseTs = item.pickedAt || 0;
+      const listUpdated = currentWishlist.updatedAt || 0;
+      let isPicked = !!item.isPicked;
+      let pickedByName = item.pickedByName || "";
+      let pickedMessage = item.pickedMessage || "";
+      let pickedAt = baseTs;
+
+      if (claim && claim.timestamp > Math.max(baseTs, listUpdated - 5000)) {
+        if (claim.action === "unpick") {
+          isPicked = false;
+          pickedByName = "";
+          pickedMessage = "";
+          pickedAt = claim.timestamp;
+        } else if (claim.action === "pick") {
+          isPicked = true;
+          pickedByName = claim.isSecret ? "Secret Surprise 🤫" : (claim.pickedByName || "A Friend");
+          pickedMessage = claim.message || "";
+          pickedAt = claim.timestamp;
+        }
+      }
+      return { ...item, isPicked, pickedByName, pickedMessage, pickedAt };
+    }
+
+    function renderWishlist() {
+      const area = document.getElementById("contentArea");
+      if (!currentWishlist) {
+        document.getElementById("controlsBar").style.display = "none";
+        document.getElementById("listTitle").textContent = "Wishlist Not Found";
+        document.getElementById("listDesc").textContent = "This link may have been unpublished or does not exist yet.";
+        area.innerHTML = `
+          <div class="glass-card empty-state">
+            <div style="font-size:44px;">🐼🎁</div>
+            <div style="font-size:17px; font-weight:700;">No wishlist found for this link</div>
+            <div style="font-size:13px; color:var(--text-secondary); max-width:420px;">
+              Ask the sender to tap "Sync & Share" inside Panda Wishlist, or enter a Wishlist ID below.
+            </div>
+            <div style="display:flex; gap:8px; width:100%; max-width:340px; margin-top:6px;">
+              <input id="manualIdInput" class="text-input" placeholder="Paste wishlist ID..." />
+              <button onclick="openManualId()" class="btn btn-primary">Open</button>
+            </div>
+          </div>`;
+        return;
+      }
+
+      document.getElementById("controlsBar").style.display = "block";
+      document.getElementById("listTitle").textContent = `${currentWishlist.emoji || "🎁"} ${currentWishlist.name}`;
+      const ownerPart = currentWishlist.ownerName ? `Curated by ${currentWishlist.ownerName}` : "Public Wishlist";
+      const updatedPart = currentWishlist.updatedAt ? ` • Updated ${new Date(currentWishlist.updatedAt).toLocaleString()}` : "";
+      document.getElementById("listDesc").textContent =
+        (currentWishlist.description ? `${currentWishlist.description} — ` : "") + ownerPart + updatedPart;
+
+      const mergedItems = (currentWishlist.items || []).map(mergeItemPickState);
+      const total = mergedItems.length;
+      const pickedCount = mergedItems.filter(i => i.isPicked).length;
+      const availCount = total - pickedCount;
+
+      document.getElementById("statTotal").textContent = total;
+      document.getElementById("statAvailable").textContent = availCount;
+      document.getElementById("statPicked").textContent = pickedCount;
+
+      const filtered = mergedItems.filter(item => {
+        if (activeFilter === "AVAILABLE" && item.isPicked) return false;
+        if (activeFilter === "PICKED" && !item.isPicked) return false;
+        if (activeFilter === "LINK" && !item.linkUrl) return false;
+        if (activeFilter === "IMAGE" && !resolveImageUrl(item)) return false;
+        if (activeFilter === "TEXT" && item.itemType !== "TEXT") return false;
+        if (activeFilter === "MUST_HAVE" && (item.priority || 0) < 2) return false;
+        if (searchQuery.trim()) {
+          const q = searchQuery.trim().toLowerCase();
+          const hay = `${item.title} ${item.noteText} ${item.storeDomain} ${item.priceText} ${item.linkUrl}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        area.innerHTML = `
+          <div class="glass-card empty-state">
+            <div style="font-size:38px;">🐼</div>
+            <div style="font-size:16px; font-weight:700;">No matching wishes here</div>
+            <div style="font-size:13px; color:var(--text-secondary);">Try changing the filter or clearing your search.</div>
+          </div>`;
+        return;
+      }
+
+      const cardsHtml = filtered.map(item => {
+        const imgUrl = resolveImageUrl(item);
+        const typeLabel = item.itemType === "IMAGE" ? "🖼️ Photo" : item.itemType === "LINK" ? "🔗 Link" : "📝 Note";
+        const storePill = item.storeDomain ? `<span class="pill pill-store">${escapeHtml(item.storeDomain)}</span>` : "";
+        const pricePill = item.priceText ? `<span class="pill pill-price">${escapeHtml(item.priceText)}</span>` : "";
+        const prioPill = (item.priority || 0) >= 2 ? `<span class="pill pill-must">⭐ Must-Have</span>` : "";
+
+        const imgBlock = imgUrl ? `
+          <div class="wish-image-wrap" onclick="openLightbox('${escapeHtml(imgUrl)}', '${escapeHtml(item.title)}', '${escapeHtml(item.id)}')">
+            <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(item.title)}" class="wish-image" loading="lazy" onerror="this.parentElement.style.display='none'" />
+            <span class="zoom-badge">🔍 Tap to view full</span>
+          </div>` : "";
+
+        const noteBlock = item.noteText ? `<div class="wish-note">${escapeHtml(item.noteText)}</div>` : "";
+
+        const pickedBlock = item.isPicked ? `
+          <div class="picked-banner">
+            <div>✅ <strong>Picked by ${escapeHtml(item.pickedByName || "Secret Surprise 🤫")}</strong></div>
+            ${item.pickedMessage ? `<div class="picked-msg">"${escapeHtml(item.pickedMessage)}"</div>` : ""}
+          </div>` : "";
+
+        const copyPayload = item.noteText && item.noteText.trim() ? item.noteText : (item.linkUrl || item.title);
+        const openLinkBtn = item.linkUrl ? `
+          <a href="${escapeHtml(item.linkUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+            Open${item.storeDomain ? " on " + escapeHtml(item.storeDomain) : " Link"} ↗
+          </a>` : "";
+
+        const copyBtn = `
+          <button class="btn" onclick="copyWishText('${escapeHtml(encodeURIComponent(copyPayload))}', '${item.linkUrl && !item.noteText ? "Link" : "Text"}')">
+            📋 Copy ${item.linkUrl && !item.noteText ? "Link" : "Text"}
+          </button>`;
+
+        const downloadBtn = imgUrl ? `
+          <button class="btn" onclick="downloadImage('${escapeHtml(imgUrl)}', '${escapeHtml(item.id)}')">
+            ⬇ Download Image
+          </button>` : "";
+
+        const pickBtn = !item.isPicked ? `
+          <button class="btn btn-mint" onclick="openPickModal('${escapeHtml(item.id)}', '${escapeHtml(item.title)}')">
+            🎁 Pick this Wish
+          </button>` : `
+          <button class="btn btn-amber" onclick="unpickWish('${escapeHtml(item.id)}')">
+            ↺ Unpick
+          </button>`;
+
+        return `
+          <article class="glass-card wish-card ${item.isPicked ? "picked" : ""}">
+            ${imgBlock}
+            <div class="wish-body">
+              <div class="badges-row">
+                <span class="pill pill-type">${typeLabel}</span>
+                ${storePill}
+                ${pricePill}
+                ${prioPill}
+              </div>
+              <div class="wish-title">${escapeHtml(item.title)}</div>
+              ${noteBlock}
+              ${pickedBlock}
+              <div class="actions-row">
+                ${openLinkBtn}
+                ${copyBtn}
+                ${downloadBtn}
+                ${pickBtn}
+              </div>
+            </div>
+          </article>`;
+      }).join("");
+
+      area.innerHTML = `<div class="grid">${cardsHtml}</div>`;
+    }
+
+    function openManualId() {
+      const val = document.getElementById("manualIdInput").value.trim();
+      if (val) {
+        window.location.search = `?id=${encodeURIComponent(val)}`;
+      }
+    }
+
+    async function copyWishText(encodedText, label) {
+      const text = decodeURIComponent(encodedText);
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast(`📋 ${label} copied to clipboard!`);
+      } catch (_) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        showToast(`📋 ${label} copied!`);
+      }
+    }
+
+    async function downloadImage(url, itemId) {
+      showToast("⬇ Preparing image download...");
+      try {
+        const res = await fetch(url, { mode: "cors" });
+        if (!res.ok) throw new Error("Fetch failed");
+        const blob = await res.blob();
+        const ext = blob.type.includes("png") ? "png" : "jpg";
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `panda-wish-${itemId}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+        showToast("✅ Image downloaded!");
+      } catch (_) {
+        window.open(url, "_blank", "noopener,noreferrer");
+        showToast("Opened image in new tab to save");
+      }
+    }
+
+    function openLightbox(url, caption, itemId) {
+      lightboxImageSrc = url;
+      lightboxFilename = itemId || "wish";
+      const img = document.getElementById("lightboxImg");
+      img.classList.remove("zoomed");
+      img.src = url;
+      document.getElementById("lightboxCaption").textContent = caption;
+      document.getElementById("lightboxModal").classList.add("open");
+    }
+
+    function openPickModal(itemId, title) {
+      pickTargetItemId = itemId;
+      document.getElementById("pickItemTitle").textContent = title;
+      const savedName = localStorage.getItem("panda_picker_name") || "";
+      document.getElementById("pickerNameInput").value = savedName;
+      document.getElementById("pickerMessageInput").value = "";
+      setPickMode(false);
+      document.getElementById("pickModal").classList.add("open");
+    }
+
+    function setPickMode(secret) {
+      pickSecretMode = secret;
+      document.getElementById("modeNamed").classList.toggle("selected", !secret);
+      document.getElementById("modeSecret").classList.toggle("selected", secret);
+      document.getElementById("nameInputWrap").style.display = secret ? "none" : "block";
+    }
+
+    async function submitPick() {
+      if (!pickTargetItemId || !currentWishlist) return;
+      const rawName = document.getElementById("pickerNameInput").value.trim();
+      if (!pickSecretMode && !rawName) {
+        showToast("Please enter your name or choose Secret Surprise 🤫");
+        return;
+      }
+      if (!pickSecretMode) localStorage.setItem("panda_picker_name", rawName);
+
+      const message = document.getElementById("pickerMessageInput").value.trim();
+      const claimPayload = {
+        action: "pick",
+        itemId: pickTargetItemId,
+        pickedByName: pickSecretMode ? "Secret Surprise 🤫" : rawName,
+        isSecret: pickSecretMode,
+        message,
+        timestamp: Date.now()
+      };
+
+      const btn = document.getElementById("pickConfirmBtn");
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+
+      try {
+        const topic = currentWishlist.ntfyTopic || `panda-wishlist-claim-${currentWishlistId}`;
+        await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
+          method: "POST",
+          body: JSON.stringify(claimPayload)
+        });
+        saveLocalClaim(pickTargetItemId, claimPayload);
+        liveClaimsMap[pickTargetItemId] = claimPayload;
+        document.getElementById("pickModal").classList.remove("open");
+        renderWishlist();
+        showToast("🎁 Wish picked! Thank you!");
+      } catch (e) {
+        showToast("Could not save pick right now. Try again.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Confirm Pick 🎁";
+      }
+    }
+
+    async function unpickWish(itemId) {
+      if (!currentWishlist) return;
+      const payload = {
+        action: "unpick",
+        itemId,
+        pickedByName: "",
+        isSecret: false,
+        message: "",
+        timestamp: Date.now()
+      };
+      try {
+        const topic = currentWishlist.ntfyTopic || `panda-wishlist-claim-${currentWishlistId}`;
+        await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        saveLocalClaim(itemId, payload);
+        liveClaimsMap[itemId] = payload;
+        renderWishlist();
+        showToast("Wish marked as available again");
+      } catch (_) {
+        showToast("Could not update right now");
+      }
+    }
+
+    function saveLocalClaim(itemId, payload) {
+      try {
+        const key = `panda_claims_${currentWishlistId}`;
+        const existing = JSON.parse(localStorage.getItem(key) || "{}");
+        existing[itemId] = payload;
+        localStorage.setItem(key, JSON.stringify(existing));
+      } catch (_) {}
+    }
+
+    async function loadAll() {
+      currentWishlistId = getWishlistIdFromUrl();
+      if (!currentWishlistId) {
+        document.getElementById("listTitle").textContent = "Panda Wishlist";
+        document.getElementById("listDesc").textContent = "Share wishlists with links, photos, and notes in a sleek Cyber Glass browser view.";
+        document.getElementById("contentArea").innerHTML = `
+          <div class="glass-card empty-state">
+            <div style="font-size:48px;">🐼🎁</div>
+            <div style="font-size:18px; font-weight:800;">Open a Shared Wishlist</div>
+            <div style="font-size:13px; color:var(--text-secondary); max-width:440px;">
+              Open the full share link sent by your friend, or paste a Wishlist ID below.
+            </div>
+            <div style="display:flex; gap:8px; width:100%; max-width:340px; margin-top:6px;">
+              <input id="manualIdInput" class="text-input" placeholder="Paste wishlist ID..." />
+              <button onclick="openManualId()" class="btn btn-primary">Open</button>
+            </div>
+          </div>`;
+        return;
+      }
+
+      currentWishlist = await fetchWishlistJson(currentWishlistId);
+      if (currentWishlist) {
+        const topic = currentWishlist.ntfyTopic || `panda-wishlist-claim-${currentWishlistId}`;
+        liveClaimsMap = await fetchLiveClaims(topic);
+      }
+      renderWishlist();
+    }
+
+    // Event bindings
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      renderWishlist();
+    });
+
+    document.getElementById("filterChips").addEventListener("click", (e) => {
+      const chip = e.target.closest(".chip");
+      if (!chip) return;
+      document.querySelectorAll("#filterChips .chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      activeFilter = chip.dataset.filter;
+      renderWishlist();
+    });
+
+    document.getElementById("refreshBtn").addEventListener("click", () => {
+      showToast("↻ Refreshing...");
+      loadAll();
+    });
+
+    document.getElementById("lightboxCloseBtn").addEventListener("click", () => {
+      document.getElementById("lightboxModal").classList.remove("open");
+    });
+    document.getElementById("lightboxImg").addEventListener("click", (e) => {
+      e.target.classList.toggle("zoomed");
+    });
+    document.getElementById("lightboxZoomBtn").addEventListener("click", () => {
+      document.getElementById("lightboxImg").classList.toggle("zoomed");
+    });
+    document.getElementById("lightboxDownloadBtn").addEventListener("click", () => {
+      downloadImage(lightboxImageSrc, lightboxFilename);
+    });
+    document.getElementById("lightboxModal").addEventListener("click", (e) => {
+      if (e.target.id === "lightboxModal") document.getElementById("lightboxModal").classList.remove("open");
+    });
+
+    document.getElementById("modeNamed").addEventListener("click", () => setPickMode(false));
+    document.getElementById("modeSecret").addEventListener("click", () => setPickMode(true));
+    document.getElementById("pickCloseBtn").addEventListener("click", () => document.getElementById("pickModal").classList.remove("open"));
+    document.getElementById("pickCancelBtn").addEventListener("click", () => document.getElementById("pickModal").classList.remove("open"));
+    document.getElementById("pickConfirmBtn").addEventListener("click", submitPick);
+
+    loadAll();
+  </script>
+</body>
+</html>
