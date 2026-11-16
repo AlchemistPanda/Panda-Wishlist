@@ -62,6 +62,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import com.panda.wishlist.core.database.entity.WishItemEntity
+import com.panda.wishlist.core.share.ShareContentAnalyzer
 import com.panda.wishlist.core.database.entity.WishlistEntity
 import com.panda.wishlist.ui.theme.CyberGlassTokens
 import java.io.File
@@ -588,6 +589,132 @@ fun FullScreenImageDialog(
                     Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Save to Gallery", fontWeight = FontWeight.Bold, maxLines = 1)
+                }
+            }
+        }
+    }
+}
+
+/** Edits an existing wish's text fields and priority; the photo and pick state are kept. */
+@Composable
+fun EditWishDialog(
+    item: WishItemEntity,
+    onDismiss: () -> Unit,
+    onSave: (WishItemEntity) -> Unit
+) {
+    var title by remember { mutableStateOf(item.title) }
+    var linkUrl by remember { mutableStateOf(item.linkUrl) }
+    var priceText by remember { mutableStateOf(item.priceText) }
+    var noteText by remember { mutableStateOf(item.noteText) }
+    var priority by remember { mutableIntStateOf(item.priority) }
+
+    Dialog(onDismissRequest = onDismiss) {
+        CasioGlassCard(accentBorderColor = CyberGlassTokens.ElectricCyan) {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                Text(
+                    text = "Edit Wish",
+                    color = CyberGlassTokens.TextPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Title") },
+                    singleLine = true,
+                    colors = glassTextFieldColors(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = linkUrl,
+                    onValueChange = { linkUrl = it },
+                    label = { Text("Link (optional)") },
+                    singleLine = true,
+                    colors = glassTextFieldColors(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = priceText,
+                    onValueChange = { priceText = it },
+                    label = { Text("Price (optional)") },
+                    placeholder = { Text("e.g. ₹1,499") },
+                    singleLine = true,
+                    colors = glassTextFieldColors(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = noteText,
+                    onValueChange = { noteText = it },
+                    label = { Text("Note (size, colour, details)") },
+                    maxLines = 4,
+                    colors = glassTextFieldColors(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CasioGlassFilterChip(
+                        text = "Nice",
+                        selected = priority == 0,
+                        onClick = { priority = 0 },
+                        modifier = Modifier.weight(1f)
+                    )
+                    CasioGlassFilterChip(
+                        text = "Love It",
+                        selected = priority == 1,
+                        onClick = { priority = 1 },
+                        modifier = Modifier.weight(1f)
+                    )
+                    CasioGlassFilterChip(
+                        text = "⭐ Must",
+                        selected = priority == 2,
+                        selectedColor = CyberGlassTokens.NeonRose,
+                        onClick = { priority = 2 },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.18f)),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Cancel", color = CyberGlassTokens.TextSecondary)
+                    }
+                    Button(
+                        onClick = {
+                            val cleanUrl = linkUrl.trim()
+                            onSave(
+                                item.copy(
+                                    title = title.trim(),
+                                    linkUrl = cleanUrl,
+                                    storeDomain = if (cleanUrl == item.linkUrl) item.storeDomain
+                                    else ShareContentAnalyzer.detectStoreName(cleanUrl),
+                                    priceText = priceText.trim(),
+                                    noteText = noteText.trim(),
+                                    priority = priority.coerceIn(0, 2)
+                                )
+                            )
+                        },
+                        enabled = title.isNotBlank(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = CyberGlassTokens.ElectricCyan,
+                            contentColor = CyberGlassTokens.BgDeepSpace
+                        ),
+                        modifier = Modifier.weight(1.2f)
+                    ) {
+                        Text("Save", fontWeight = FontWeight.Bold, maxLines = 1)
+                    }
                 }
             }
         }

@@ -47,7 +47,9 @@ import javax.inject.Inject
 data class PendingIncomingShare(
     val payload: ParsedSharePayload,
     val remoteImageUrl: String = "",
-    val isFetchingMeta: Boolean = false
+    val isFetchingMeta: Boolean = false,
+    /** Identifies one incoming share; metadata updates keep it, a new share gets a new one. */
+    val shareId: Long = System.nanoTime()
 )
 
 @HiltViewModel
@@ -106,7 +108,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             repository.ensureDefaultsSeeded()
             verifyGitHub()
-            repository.refreshAllLiveClaims()
+            repository.syncFriendPicksAndRepublish()
             val s = repository.settings.first()
             if (s.autoUpdateCheckEnabled) {
                 val res = updateChecker.checkForUpdates()
@@ -166,6 +168,10 @@ class MainViewModel @Inject constructor(
             )
 
             val shouldFetchMeta = parsed.linkUrl.isNotBlank()
+            // A new share replaces one still on screen; clean up the replaced one's photos.
+            _pendingShare.value?.payload?.localImagePaths?.let { stale ->
+                withContext(Dispatchers.IO) { stale.forEach { runCatching { File(it).delete() } } }
+            }
             _pendingShare.value = PendingIncomingShare(
                 payload = parsed,
                 isFetchingMeta = shouldFetchMeta
@@ -174,6 +180,10 @@ class MainViewModel @Inject constructor(
             if (shouldFetchMeta) {
                 val meta = linkMetadataExtractor.fetchMetadata(parsed.linkUrl)
                 val current = _pendingShare.value ?: return@launch
+                // Another share may have replaced this one while the page was loading.
+                if (current.payload.linkUrl != parsed.linkUrl ||
+                    current.payload.localImagePaths != parsed.localImagePaths
+                ) return@launch
                 val upgradedTitle = when {
                     meta.title.isNotBlank() && (
                         current.payload.title.endsWith("Wish") ||
@@ -200,7 +210,12 @@ class MainViewModel @Inject constructor(
     }
 
     fun dismissPendingShare() {
+        val dismissed = _pendingShare.value ?: return
         _pendingShare.value = null
+        // The shared photos were already copied into app storage; drop them if not saved.
+        viewModelScope.launch(Dispatchers.IO) {
+            dismissed.payload.localImagePaths.forEach { runCatching { File(it).delete() } }
+        }
     }
 
     fun savePendingShare(
@@ -322,6 +337,13 @@ class MainViewModel @Inject constructor(
 
     suspend fun fetchMetadataForInput(url: String) = linkMetadataExtractor.fetchMetadata(url)
 
+    fun updateWishItem(item: WishItemEntity) {
+        viewModelScope.launch {
+            repository.updateWishItem(item)
+            _toastMessage.value = "Wish updated"
+        }
+    }
+
     fun deleteWishItem(itemId: String) {
         viewModelScope.launch {
             repository.deleteWishItem(itemId)
@@ -382,7 +404,7 @@ class MainViewModel @Inject constructor(
 
     fun refreshAllClaims() {
         viewModelScope.launch {
-            val count = repository.refreshAllLiveClaims()
+            val count = repository.syncFriendPicksAndRepublish()
             _toastMessage.value = if (count > 0) {
                 "Updated $count picked wish(es) from friends 🎁"
             } else {

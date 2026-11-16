@@ -13,14 +13,19 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Serializable
-data class CatalogAppEntry(
-    val id: String = "",
-    val name: String = "",
-    val packageName: String = "",
-    val versionCode: Int = 0,
+data class CatalogRelease(
     val versionName: String = "",
-    val downloadUrl: String = "",
-    val releaseNotes: String = ""
+    val versionCode: Int = 0,
+    val apkUrl: String = "",
+    val notes: String = "",
+    val size: Long = 0L
+)
+
+@Serializable
+data class CatalogAppEntry(
+    val packageName: String = "",
+    val name: String = "",
+    val releases: List<CatalogRelease> = emptyList()
 )
 
 @Serializable
@@ -37,6 +42,17 @@ data class UpdateCheckResult(
     val releaseNotes: String,
     val downloadUrl: String
 )
+
+/**
+ * The newest release of [packageName] in Panda App Store's catalog, or null when the
+ * app or a usable release is missing. Releases are compared by build number
+ * (versionCode), never by the version string. Pure, so it is unit-tested.
+ */
+fun findLatestRelease(catalog: AppStoreCatalog, packageName: String): CatalogRelease? =
+    catalog.apps.firstOrNull { it.packageName == packageName }
+        ?.releases
+        ?.filter { it.versionCode > 0 && it.apkUrl.isNotBlank() }
+        ?.maxByOrNull { it.versionCode }
 
 @Singleton
 class AppUpdateChecker @Inject constructor(
@@ -64,29 +80,16 @@ class AppUpdateChecker @Inject constructor(
             if (body.isBlank()) return@withContext null
 
             val catalog = json.decodeFromString<AppStoreCatalog>(body)
-            val appEntry = catalog.apps.find {
-                it.packageName == context.packageName ||
-                    it.name.contains("Panda Wishlist", ignoreCase = true)
-            } ?: return@withContext UpdateCheckResult(
-                hasUpdate = false,
-                currentVersion = currentVersion,
-                currentBuild = currentBuild,
-                latestVersion = currentVersion,
-                latestBuild = currentBuild,
-                releaseNotes = "Up to date.",
-                downloadUrl = ""
-            )
-
-            val hasUpdate = appEntry.versionCode > currentBuild
+            val latest = findLatestRelease(catalog, context.packageName)
 
             UpdateCheckResult(
-                hasUpdate = hasUpdate,
+                hasUpdate = latest != null && latest.versionCode > currentBuild,
                 currentVersion = currentVersion,
                 currentBuild = currentBuild,
-                latestVersion = appEntry.versionName,
-                latestBuild = appEntry.versionCode,
-                releaseNotes = appEntry.releaseNotes,
-                downloadUrl = appEntry.downloadUrl
+                latestVersion = latest?.versionName ?: currentVersion,
+                latestBuild = latest?.versionCode ?: currentBuild,
+                releaseNotes = latest?.notes.orEmpty(),
+                downloadUrl = latest?.apkUrl.orEmpty()
             )
         } catch (e: Exception) {
             Log.w(TAG, "Update check failed: ${e.message}")

@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.BorderStroke
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -201,6 +204,10 @@ private fun PandaWishlistScaffold(viewModel: MainViewModel) {
                 }
             }
         ) { innerPadding ->
+            // System Back on Add / Shared / Settings returns to Wishlists instead of closing the app.
+            BackHandler(enabled = currentTab != WishlistTab.WISHLISTS) {
+                currentTab = WishlistTab.WISHLISTS
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -209,10 +216,18 @@ private fun PandaWishlistScaffold(viewModel: MainViewModel) {
                 when (currentTab) {
                     WishlistTab.WISHLISTS -> {
                         val detailId = selectedWishlistId
-                        if (detailId != null) {
-                            val activeWishlist = viewModel.observeWishlist(detailId).collectAsState(initial = null).value
-                            val detailItems = viewModel.observeItemsForWishlist(detailId).collectAsState(initial = emptyList()).value
-                            if (activeWishlist != null) {
+                        if (detailId != null) key(detailId) {
+                            // Flows are remembered per wishlist: building them inline restarted the
+                            // queries on every recomposition. The first frame is always null while
+                            // Room loads, so that must not be read as "wishlist deleted" (deleting
+                            // a wishlist already clears the selection in the view model).
+                            val activeWishlist by remember { viewModel.observeWishlist(detailId) }
+                                .collectAsState(initial = null)
+                            val detailItems by remember { viewModel.observeItemsForWishlist(detailId) }
+                                .collectAsState(initial = emptyList())
+                            val wishlistNow = activeWishlist
+                            if (wishlistNow != null) {
+                                val activeWishlist = wishlistNow
                                 WishlistDetailScreen(
                                     wishlist = activeWishlist,
                                     items = detailItems,
@@ -236,10 +251,13 @@ private fun PandaWishlistScaffold(viewModel: MainViewModel) {
                                         viewModel.setWishPicked(itemId, picked, byName, secret, msg)
                                     },
                                     onSaveImageToGallery = { viewModel.saveWishImageToGallery(context, it) },
+                                    onUpdateItem = { viewModel.updateWishItem(it) },
                                     onShowToast = { viewModel.showToast(it) }
                                 )
                             } else {
-                                viewModel.closeWishlistDetail()
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator(color = CyberGlassTokens.ElectricCyan)
+                                }
                             }
                         } else {
                             WishlistsScreen(
@@ -330,7 +348,7 @@ private fun PandaWishlistScaffold(viewModel: MainViewModel) {
         }
     }
 
-    pendingShare?.let { incoming ->
+    pendingShare?.let { incoming -> key(incoming.shareId) {
         IncomingShareSheet(
             pending = incoming,
             wishlists = allWishlists,
@@ -352,7 +370,7 @@ private fun PandaWishlistScaffold(viewModel: MainViewModel) {
                 }
             }
         )
-    }
+    } }
 
     if (showInlineCreateFolder) {
         CreateWishlistDialog(

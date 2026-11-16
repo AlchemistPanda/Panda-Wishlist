@@ -27,8 +27,8 @@ android {
         applicationId = "com.panda.wishlist"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -126,6 +126,9 @@ dependencies {
 
     // QR Code Generation
     implementation("com.google.zxing:core:3.5.3")
+
+    // Background friend-pick sync
+    implementation(libs.work.runtime.ktx)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)

@@ -265,7 +265,9 @@ class WishlistRepositoryImpl @Inject constructor(
             isPicked = isPicked,
             pickedByName = displayPicker,
             pickedMessage = cleanMsg,
-            pickedAt = if (isPicked) now else 0L
+            // pickedAt records the last pick/unpick, not only picks: resetting it to 0 on unpick
+            // let any older friend "pick" still on ntfy win again on the next claim refresh.
+            pickedAt = now
         )
 
         val wishlist = dao.getWishlistById(item.wishlistId)
@@ -368,6 +370,20 @@ class WishlistRepositoryImpl @Inject constructor(
         var total = 0
         for (list in lists) {
             total += refreshLiveClaimsForWishlist(list.id)
+        }
+        return total
+    }
+
+    override suspend fun syncFriendPicksAndRepublish(): Int {
+        val autoSync = tokenStore.settingsFlow.first().autoSyncOnChange
+        var total = 0
+        for (list in dao.getAllWishlistsOnce().filter { it.isPublicSynced }) {
+            val changed = refreshLiveClaimsForWishlist(list.id)
+            total += changed
+            // ntfy.sh only keeps messages for ~12 hours, and the web page reads picks from
+            // there plus wishlist.json. Writing new picks into wishlist.json is what keeps a
+            // friend's pick visible to everyone after ntfy forgets it.
+            if (changed > 0 && autoSync) syncWishlistToGitHub(list.id)
         }
         return total
     }

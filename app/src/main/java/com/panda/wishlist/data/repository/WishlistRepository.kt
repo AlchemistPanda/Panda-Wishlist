@@ -52,6 +52,9 @@ interface WishlistRepository {
     suspend fun refreshLiveClaimsForWishlist(wishlistId: String): Int
     suspend fun refreshAllLiveClaims(): Int
 
+    /** Pulls friend picks for every public list and republishes the lists that changed. */
+    suspend fun syncFriendPicksAndRepublish(): Int
+
     suspend fun verifyGitHubConnection(): String?
     suspend fun setCustomGitHubToken(token: String)
     suspend fun setOwnerDisplayName(name: String)

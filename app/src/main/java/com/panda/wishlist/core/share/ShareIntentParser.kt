@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
 import com.panda.wishlist.core.database.entity.WishItemType
@@ -194,13 +196,40 @@ class ShareIntentParser @Inject constructor(
             } ?: return null
 
             val scaled = scaleDownIfNeeded(bitmap, maxDim)
-            FileOutputStream(outFile).use { fos ->
-                scaled.compress(Bitmap.CompressFormat.JPEG, 86, fos)
-            }
             if (scaled !== bitmap) bitmap.recycle()
-            scaled.recycle()
+            // BitmapFactory ignores EXIF orientation, so camera photos came out sideways.
+            val upright = applyExifOrientation(scaled, readExifOrientation(uri))
+            if (upright !== scaled) scaled.recycle()
+            FileOutputStream(outFile).use { fos ->
+                upright.compress(Bitmap.CompressFormat.JPEG, 86, fos)
+            }
+            upright.recycle()
             outFile.absolutePath
         }.getOrNull()
+    }
+
+    private fun readExifOrientation(uri: Uri): Int = runCatching {
+        context.contentResolver.openInputStream(uri)?.use { stream ->
+            ExifInterface(stream).getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+        }
+    }.getOrNull() ?: ExifInterface.ORIENTATION_NORMAL
+
+    private fun applyExifOrientation(bmp: Bitmap, orientation: Int): Bitmap {
+        val matrix = Matrix()
+        when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+            ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
+            ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
+            ExifInterface.ORIENTATION_TRANSPOSE -> { matrix.postRotate(90f); matrix.postScale(-1f, 1f) }
+            ExifInterface.ORIENTATION_TRANSVERSE -> { matrix.postRotate(270f); matrix.postScale(-1f, 1f) }
+            else -> return bmp
+        }
+        return Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, matrix, true)
     }
 
     private fun scaleDownIfNeeded(bmp: Bitmap, maxDim: Int): Bitmap {

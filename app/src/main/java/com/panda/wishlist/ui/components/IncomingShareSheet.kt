@@ -77,10 +77,20 @@ fun IncomingShareSheet(
                 ?: wishlists.firstOrNull()?.id.orEmpty()
         )
     }
-    var title by remember(pending.payload.title) { mutableStateOf(pending.payload.title) }
-    var noteText by remember(pending.payload.noteText) { mutableStateOf(pending.payload.noteText) }
-    var linkUrl by remember(pending.payload.linkUrl) { mutableStateOf(pending.payload.linkUrl) }
-    var priceText by remember(pending.payload.priceText) { mutableStateOf(pending.payload.priceText) }
+    // Fields start from the share and pick up fetched page details (title, price, note)
+    // when they arrive, but never overwrite something the user has already typed.
+    var title by remember { mutableStateOf(pending.payload.title) }
+    var noteText by remember { mutableStateOf(pending.payload.noteText) }
+    var linkUrl by remember { mutableStateOf(pending.payload.linkUrl) }
+    var priceText by remember { mutableStateOf(pending.payload.priceText) }
+    var titleEdited by remember { mutableStateOf(false) }
+    var noteEdited by remember { mutableStateOf(false) }
+    var priceEdited by remember { mutableStateOf(false) }
+    LaunchedEffect(pending.payload) {
+        if (!titleEdited) title = pending.payload.title
+        if (!noteEdited) noteText = pending.payload.noteText
+        if (!priceEdited) priceText = pending.payload.priceText
+    }
     var priority by remember { mutableIntStateOf(1) }
 
     LaunchedEffect(wishlists) {
@@ -237,7 +247,7 @@ fun IncomingShareSheet(
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
                         value = title,
-                        onValueChange = { title = it },
+                        onValueChange = { title = it; titleEdited = true },
                         label = { Text("Wish Title") },
                         maxLines = 2,
                         colors = glassTextFieldColors(),
@@ -251,7 +261,7 @@ fun IncomingShareSheet(
                     ) {
                         OutlinedTextField(
                             value = priceText,
-                            onValueChange = { priceText = it },
+                            onValueChange = { priceText = it; priceEdited = true },
                             label = { Text("Price (optional)") },
                             placeholder = { Text("₹1,999") },
                             singleLine = true,
@@ -275,7 +285,7 @@ fun IncomingShareSheet(
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = noteText,
-                        onValueChange = { noteText = it },
+                        onValueChange = { noteText = it; noteEdited = true },
                         label = { Text("Note / Text") },
                         maxLines = 3,
                         colors = glassTextFieldColors(),

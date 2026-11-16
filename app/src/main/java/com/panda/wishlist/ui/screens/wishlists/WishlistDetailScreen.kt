@@ -68,6 +68,7 @@ import com.panda.wishlist.core.database.entity.WishlistEntity
 import com.panda.wishlist.ui.components.CasioGlassCard
 import com.panda.wishlist.ui.components.CasioGlassFilterChip
 import com.panda.wishlist.ui.components.CreateWishlistDialog
+import com.panda.wishlist.ui.components.EditWishDialog
 import com.panda.wishlist.ui.components.FullScreenImageDialog
 import com.panda.wishlist.ui.components.MoveItemDialog
 import com.panda.wishlist.ui.components.PickWishDialog
@@ -100,6 +101,7 @@ fun WishlistDetailScreen(
     onMoveItem: (itemId: String, targetWishlistId: String) -> Unit,
     onSetItemPicked: (itemId: String, isPicked: Boolean, pickedByName: String, isSecret: Boolean, message: String) -> Unit,
     onSaveImageToGallery: (WishItemEntity) -> Unit,
+    onUpdateItem: (WishItemEntity) -> Unit,
     onShowToast: (String) -> Unit
 ) {
     BackHandler(onBack = onBack)
@@ -111,6 +113,8 @@ fun WishlistDetailScreen(
     var moveDialogItem by remember { mutableStateOf<WishItemEntity?>(null) }
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var editDialogItem by remember { mutableStateOf<WishItemEntity?>(null) }
+    var removeConfirmItem by remember { mutableStateOf<WishItemEntity?>(null) }
 
     val filtered = remember(items, activeFilter) {
         when (activeFilter) {
@@ -308,7 +312,8 @@ fun WishlistDetailScreen(
                             }
                         },
                         onMove = { moveDialogItem = item },
-                        onDelete = { onDeleteItem(item.id) }
+                        onEdit = { editDialogItem = item },
+                        onDelete = { removeConfirmItem = item }
                     )
                 }
             }
@@ -343,6 +348,47 @@ fun WishlistDetailScreen(
             onSelectTarget = { targetId ->
                 moveDialogItem = null
                 onMoveItem(item.id, targetId)
+            }
+        )
+    }
+
+    editDialogItem?.let { item ->
+        EditWishDialog(
+            item = item,
+            onDismiss = { editDialogItem = null },
+            onSave = { updated ->
+                editDialogItem = null
+                onUpdateItem(updated)
+            }
+        )
+    }
+
+    removeConfirmItem?.let { item ->
+        AlertDialog(
+            onDismissRequest = { removeConfirmItem = null },
+            containerColor = CyberGlassTokens.GlassSurface,
+            title = { Text("Remove this wish?", color = CyberGlassTokens.TextPrimary) },
+            text = {
+                Text(
+                    "'${item.title}' and its saved photo will be deleted. This cannot be undone.",
+                    color = CyberGlassTokens.TextSecondary
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        removeConfirmItem = null
+                        onDeleteItem(item.id)
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = CyberGlassTokens.NeonRose)
+                ) {
+                    Text("Remove", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { removeConfirmItem = null }) {
+                    Text("Cancel", color = CyberGlassTokens.TextSecondary)
+                }
             }
         )
     }
@@ -403,6 +449,7 @@ private fun WishItemCard(
     onSaveImage: () -> Unit,
     onPickOrUnpick: () -> Unit,
     onMove: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     val imageModel: Any? = remember(item.id, item.localImagePath, item.remoteImageUrl) {
@@ -565,6 +612,12 @@ private fun WishItemCard(
                 label = if (item.isPicked) "Unpick" else "Pick",
                 tint = if (item.isPicked) CyberGlassTokens.WarningAmber else CyberGlassTokens.MintEmerald,
                 onClick = onPickOrUnpick
+            )
+            ActionPillButton(
+                icon = Icons.Default.Edit,
+                label = "Edit",
+                tint = CyberGlassTokens.TextSecondary,
+                onClick = onEdit
             )
             if (canMove) {
                 ActionPillButton(
