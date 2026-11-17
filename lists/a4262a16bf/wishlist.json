@@ -5,8 +5,25 @@
     "emoji": "🎁",
     "ownerName": "Manu",
     "ntfyTopic": "panda-wishlist-claim-a4262a16bf",
-    "updatedAt": 1794925095747,
+    "updatedAt": 1794925143181,
     "items": [
+        {
+            "id": "87f95a9129",
+            "itemType": "IMAGE",
+            "title": "Photo from Manuraj",
+            "noteText": "",
+            "linkUrl": "",
+            "storeDomain": "",
+            "priceText": "",
+            "priority": 1,
+            "imagePath": "images/87f95a9129.jpg",
+            "remoteImageUrl": "",
+            "isPicked": false,
+            "pickedByName": "",
+            "pickedMessage": "",
+            "pickedAt": 0,
+            "createdAt": 1794925137800
+        },
         {
             "id": "a0eb7b8f0f",
             "itemType": "IMAGE",
