@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.panda.wishlist.BuildConfig
+import com.panda.wishlist.core.database.entity.WishlistEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -18,11 +19,24 @@ private val Context.wishlistDataStore by preferencesDataStore(name = "panda_wish
 data class AppSettings(
     val ownerDisplayName: String = "Manu",
     val lastUsedWishlistId: String = "",
+    val defaultWishlistId: String = "",
+    val autoSaveShareEnabled: Boolean = true,
     val autoSyncOnChange: Boolean = true,
     val autoUpdateCheckEnabled: Boolean = true,
     val customGithubToken: String = "",
     val hasSeededDefaults: Boolean = false
-)
+) {
+    /** Resolves the effective default wishlist: pinned default -> most recent -> first available. */
+    fun resolveDefaultWishlistId(wishlists: List<WishlistEntity>): String {
+        if (defaultWishlistId.isNotBlank() && wishlists.any { it.id == defaultWishlistId }) {
+            return defaultWishlistId
+        }
+        if (lastUsedWishlistId.isNotBlank() && wishlists.any { it.id == lastUsedWishlistId }) {
+            return lastUsedWishlistId
+        }
+        return wishlists.firstOrNull()?.id.orEmpty()
+    }
+}
 
 @Singleton
 class GitHubTokenStore @Inject constructor(
@@ -31,6 +45,8 @@ class GitHubTokenStore @Inject constructor(
     private object Keys {
         val OWNER_NAME = stringPreferencesKey("owner_display_name")
         val LAST_WISHLIST_ID = stringPreferencesKey("last_wishlist_id")
+        val DEFAULT_WISHLIST_ID = stringPreferencesKey("default_wishlist_id")
+        val AUTO_SAVE_SHARE_ENABLED = booleanPreferencesKey("auto_save_share_enabled")
         val AUTO_SYNC = booleanPreferencesKey("auto_sync_on_change")
         val AUTO_UPDATE_CHECK = booleanPreferencesKey("auto_update_check")
         val CUSTOM_GH_TOKEN = stringPreferencesKey("custom_gh_token")
@@ -41,6 +57,8 @@ class GitHubTokenStore @Inject constructor(
         AppSettings(
             ownerDisplayName = prefs[Keys.OWNER_NAME] ?: "Manu",
             lastUsedWishlistId = prefs[Keys.LAST_WISHLIST_ID] ?: "",
+            defaultWishlistId = prefs[Keys.DEFAULT_WISHLIST_ID] ?: "",
+            autoSaveShareEnabled = prefs[Keys.AUTO_SAVE_SHARE_ENABLED] ?: true,
             autoSyncOnChange = prefs[Keys.AUTO_SYNC] ?: true,
             autoUpdateCheckEnabled = prefs[Keys.AUTO_UPDATE_CHECK] ?: true,
             customGithubToken = prefs[Keys.CUSTOM_GH_TOKEN] ?: "",
@@ -75,6 +93,14 @@ class GitHubTokenStore @Inject constructor(
 
     suspend fun setLastUsedWishlistId(id: String) {
         context.wishlistDataStore.edit { it[Keys.LAST_WISHLIST_ID] = id }
+    }
+
+    suspend fun setDefaultWishlistId(id: String) {
+        context.wishlistDataStore.edit { it[Keys.DEFAULT_WISHLIST_ID] = id }
+    }
+
+    suspend fun setAutoSaveShareEnabled(enabled: Boolean) {
+        context.wishlistDataStore.edit { it[Keys.AUTO_SAVE_SHARE_ENABLED] = enabled }
     }
 
     suspend fun setAutoSyncOnChange(enabled: Boolean) {

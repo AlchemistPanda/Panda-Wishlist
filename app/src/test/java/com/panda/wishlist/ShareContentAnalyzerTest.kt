@@ -1,7 +1,9 @@
 package com.panda.wishlist
 
 import com.panda.wishlist.core.database.entity.WishItemType
+import com.panda.wishlist.core.database.entity.WishlistEntity
 import com.panda.wishlist.core.share.ShareContentAnalyzer
+import com.panda.wishlist.data.sync.AppSettings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -67,5 +69,76 @@ class ShareContentAnalyzerTest {
         assertEquals("Ajio", parsed.storeDomain)
         assertEquals("https://www.ajio.com/item/123", parsed.linkUrl)
         assertEquals(1, parsed.localImagePaths.size)
+    }
+
+    @Test
+    fun `resolveDefaultWishlistId prefers explicit default over most recent`() {
+        val wishlists = listOf(
+            WishlistEntity(id = "w1", name = "My Wishlist"),
+            WishlistEntity(id = "w2", name = "Tech"),
+            WishlistEntity(id = "w3", name = "Birthday")
+        )
+        val settings = AppSettings(
+            lastUsedWishlistId = "w3",
+            defaultWishlistId = "w2"
+        )
+        assertEquals("w2", settings.resolveDefaultWishlistId(wishlists))
+    }
+
+    @Test
+    fun `resolveDefaultWishlistId uses lastUsed when default is blank or deleted`() {
+        val wishlists = listOf(
+            WishlistEntity(id = "w1", name = "My Wishlist"),
+            WishlistEntity(id = "w2", name = "Tech")
+        )
+        assertEquals(
+            "w2",
+            AppSettings(lastUsedWishlistId = "w2", defaultWishlistId = "").resolveDefaultWishlistId(wishlists)
+        )
+        assertEquals(
+            "w2",
+            AppSettings(lastUsedWishlistId = "w2", defaultWishlistId = "deleted").resolveDefaultWishlistId(wishlists)
+        )
+        assertEquals(
+            "w1",
+            AppSettings(lastUsedWishlistId = "deleted", defaultWishlistId = "").resolveDefaultWishlistId(wishlists)
+        )
+        assertEquals("", AppSettings(lastUsedWishlistId = "w1", defaultWishlistId = "w2").resolveDefaultWishlistId(emptyList()))
+    }
+
+    @Test
+    fun `resolveFallbackTitle returns clean defaults when title is blank`() {
+        assertEquals(
+            "Custom Title",
+            ShareContentAnalyzer.resolveFallbackTitle("  Custom Title  ", WishItemType.LINK, "Amazon", hasImages = false)
+        )
+        assertEquals(
+            "Saved Photo",
+            ShareContentAnalyzer.resolveFallbackTitle("   ", WishItemType.IMAGE, "Amazon", hasImages = true)
+        )
+        assertEquals(
+            "Amazon Wish",
+            ShareContentAnalyzer.resolveFallbackTitle("", WishItemType.LINK, "Amazon", hasImages = false)
+        )
+        assertEquals(
+            "Saved Wish",
+            ShareContentAnalyzer.resolveFallbackTitle("", WishItemType.LINK, "", hasImages = false)
+        )
+        assertEquals(
+            "Saved Wish",
+            ShareContentAnalyzer.resolveFallbackTitle("", WishItemType.TEXT, "", hasImages = false)
+        )
+    }
+
+    @Test
+    fun `image share without text produces clean Saved Photo title`() {
+        val parsed = ShareContentAnalyzer.analyzeTextAndImages(
+            rawText = "",
+            subject = "",
+            imagePaths = listOf("/data/user/0/com.panda.wishlist/files/wish_images/img1.jpg")
+        )
+        assertEquals(WishItemType.IMAGE, parsed.itemType)
+        assertEquals("Saved Photo", parsed.title)
+        assertEquals("", parsed.noteText)
     }
 }

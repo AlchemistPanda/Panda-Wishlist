@@ -123,6 +123,21 @@ object ShareContentAnalyzer {
             localImagePaths = imagePaths
         )
     }
+
+    fun resolveFallbackTitle(
+        title: String,
+        itemType: WishItemType,
+        storeName: String,
+        hasImages: Boolean = false
+    ): String {
+        val trimmed = title.trim()
+        if (trimmed.isNotBlank()) return trimmed
+        return when {
+            hasImages || itemType == WishItemType.IMAGE -> "Saved Photo"
+            itemType == WishItemType.LINK -> if (storeName.isNotBlank()) "$storeName Wish" else "Saved Wish"
+            else -> "Saved Wish"
+        }
+    }
 }
 
 @Singleton
@@ -139,8 +154,8 @@ class ShareIntentParser @Inject constructor(
         if (!isShareIntent(intent)) return null
         val nonNullIntent = intent ?: return null
 
-        val extraText = nonNullIntent.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
-        val extraSubject = nonNullIntent.getStringExtra(Intent.EXTRA_SUBJECT).orEmpty()
+        val extraText = nonNullIntent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString().orEmpty()
+        val extraSubject = nonNullIntent.getCharSequenceExtra(Intent.EXTRA_SUBJECT)?.toString().orEmpty()
 
         val clipText = buildString {
             val cd = nonNullIntent.clipData

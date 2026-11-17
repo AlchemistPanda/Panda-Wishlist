@@ -11,6 +11,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,7 +36,6 @@ import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
@@ -58,17 +59,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.panda.wishlist.BuildConfig
+import com.panda.wishlist.core.database.entity.WishlistEntity
 import com.panda.wishlist.core.logging.DebugLogEntry
 import com.panda.wishlist.core.logging.LogLevel
 import com.panda.wishlist.data.sync.AppSettings
 import com.panda.wishlist.ui.components.CasioGlassCard
+import com.panda.wishlist.ui.components.CasioGlassFilterChip
 import com.panda.wishlist.ui.components.CasioGlassSwitch
+import com.panda.wishlist.ui.components.glassEmeraldButtonColors
+import com.panda.wishlist.ui.components.glassPrimaryButtonColors
+import com.panda.wishlist.ui.components.glassSecondaryButtonColors
 import com.panda.wishlist.ui.components.glassTextFieldColors
 import com.panda.wishlist.ui.theme.CyberGlassTokens
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SettingsScreen(
     settings: AppSettings,
+    wishlists: List<WishlistEntity>,
     connectedGithubUser: String?,
     isCheckingUpdate: Boolean,
     debugLogs: List<DebugLogEntry>,
@@ -77,6 +85,8 @@ fun SettingsScreen(
     onVerifyGitHub: () -> Unit,
     onSetAutoSync: (Boolean) -> Unit,
     onSetAutoUpdateCheck: (Boolean) -> Unit,
+    onSetDefaultWishlist: (String) -> Unit,
+    onSetAutoSaveShare: (Boolean) -> Unit,
     onCheckUpdatesNow: () -> Unit,
     onClearLogs: () -> Unit,
     onExportLogs: () -> String,
@@ -160,20 +170,18 @@ fun SettingsScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = { onSaveOwnerName(ownerNameInput) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = CyberGlassTokens.ElectricCyan,
-                        contentColor = CyberGlassTokens.BgDeepSpace
-                    ),
+                    colors = glassPrimaryButtonColors(),
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Save Name", fontWeight = FontWeight.Bold, maxLines = 1)
                 }
                 OutlinedButton(
                     onClick = onVerifyGitHub,
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
+                    colors = glassSecondaryButtonColors(),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.25f)),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Verify Sync", color = CyberGlassTokens.TextPrimary, maxLines = 1)
+                    Text("Verify Sync", fontWeight = FontWeight.SemiBold, maxLines = 1)
                 }
             }
 
@@ -205,10 +213,7 @@ fun SettingsScreen(
                             tokenInput = ""
                             showTokenBox = false
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = CyberGlassTokens.MintEmerald,
-                            contentColor = CyberGlassTokens.BgDeepSpace
-                        ),
+                        colors = glassEmeraldButtonColors(),
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("Apply Token", fontWeight = FontWeight.Bold)
@@ -219,12 +224,90 @@ fun SettingsScreen(
                             tokenInput = ""
                             showTokenBox = false
                         },
-                        border = BorderStroke(1.dp, CyberGlassTokens.NeonRose.copy(alpha = 0.5f)),
+                        colors = glassSecondaryButtonColors(),
+                        border = BorderStroke(1.dp, CyberGlassTokens.NeonRose.copy(alpha = 0.55f)),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Use Built-in", color = CyberGlassTokens.NeonRose)
+                        Text("Use Built-in", color = CyberGlassTokens.NeonRose, fontWeight = FontWeight.SemiBold)
                     }
                 }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Sharing & Quick Add
+        CasioGlassCard {
+            Text(
+                text = "Sharing & Quick Add",
+                color = CyberGlassTokens.TextPrimary,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+
+            val hasExplicitDefault = settings.defaultWishlistId.isNotBlank() &&
+                wishlists.any { it.id == settings.defaultWishlistId }
+            Text(
+                text = "Default Wishlist",
+                color = CyberGlassTokens.TextPrimary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = if (!hasExplicitDefault) {
+                    "Most Recent (Default) — uses the last folder you saved to"
+                } else {
+                    val pinned = wishlists.first { it.id == settings.defaultWishlistId }
+                    "Pinned to ${pinned.emoji} ${pinned.name}"
+                },
+                color = CyberGlassTokens.TextSecondary,
+                fontSize = 11.5.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                CasioGlassFilterChip(
+                    text = "Most Recent (Default)",
+                    selected = !hasExplicitDefault,
+                    onClick = { onSetDefaultWishlist("") }
+                )
+                wishlists.forEach { folder ->
+                    CasioGlassFilterChip(
+                        text = "${folder.emoji} ${folder.name}",
+                        selected = settings.defaultWishlistId == folder.id,
+                        onClick = { onSetDefaultWishlist(folder.id) }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                    Text(
+                        text = "Auto-Save Shared Items (3s)",
+                        color = CyberGlassTokens.TextPrimary,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "Wait 3 seconds after sharing to auto-save to your default wishlist (cancellable)",
+                        color = CyberGlassTokens.TextSecondary,
+                        fontSize = 11.5.sp
+                    )
+                }
+                CasioGlassSwitch(
+                    checked = settings.autoSaveShareEnabled,
+                    onCheckedChange = onSetAutoSaveShare
+                )
             }
         }
 
@@ -308,14 +391,19 @@ fun SettingsScreen(
                 OutlinedButton(
                     onClick = onCheckUpdatesNow,
                     enabled = !isCheckingUpdate,
-                    border = BorderStroke(1.dp, CyberGlassTokens.ElectricCyan.copy(alpha = 0.5f))
+                    colors = glassSecondaryButtonColors(),
+                    border = BorderStroke(
+                        1.dp,
+                        if (!isCheckingUpdate) CyberGlassTokens.ElectricCyan.copy(alpha = 0.6f)
+                        else Color.White.copy(alpha = 0.16f)
+                    )
                 ) {
                     if (isCheckingUpdate) {
                         CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = CyberGlassTokens.ElectricCyan)
                     } else {
-                        Icon(Icons.Default.SystemUpdate, contentDescription = null, tint = CyberGlassTokens.ElectricCyan, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.SystemUpdate, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Check", color = CyberGlassTokens.ElectricCyan, maxLines = 1)
+                        Text("Check", fontWeight = FontWeight.SemiBold, maxLines = 1)
                     }
                 }
             }
@@ -367,12 +455,13 @@ fun SettingsScreen(
                             cm.setPrimaryClip(ClipData.newPlainText("Debug Logs", txt))
                             onShowToast("Logs copied to clipboard")
                         },
-                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f)),
+                        colors = glassSecondaryButtonColors(),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.24f)),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = null, tint = CyberGlassTokens.TextPrimary, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Copy", color = CyberGlassTokens.TextPrimary, fontSize = 11.5.sp, maxLines = 1)
+                        Text("Copy", fontSize = 11.5.sp, maxLines = 1)
                     }
                     OutlinedButton(
                         onClick = {
@@ -383,16 +472,18 @@ fun SettingsScreen(
                             }
                             context.startActivity(Intent.createChooser(send, "Share Debug Logs"))
                         },
-                        border = BorderStroke(1.dp, CyberGlassTokens.ElectricCyan.copy(alpha = 0.45f)),
+                        colors = glassSecondaryButtonColors(),
+                        border = BorderStroke(1.dp, CyberGlassTokens.ElectricCyan.copy(alpha = 0.55f)),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.Share, contentDescription = null, tint = CyberGlassTokens.ElectricCyan, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Share", color = CyberGlassTokens.ElectricCyan, fontSize = 11.5.sp, maxLines = 1)
+                        Text("Share", fontSize = 11.5.sp, maxLines = 1)
                     }
                     OutlinedButton(
                         onClick = onClearLogs,
-                        border = BorderStroke(1.dp, CyberGlassTokens.NeonRose.copy(alpha = 0.45f)),
+                        colors = glassSecondaryButtonColors(),
+                        border = BorderStroke(1.dp, CyberGlassTokens.NeonRose.copy(alpha = 0.55f)),
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(Icons.Default.DeleteSweep, contentDescription = null, tint = CyberGlassTokens.NeonRose, modifier = Modifier.size(14.dp))

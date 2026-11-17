@@ -238,11 +238,17 @@ class MainViewModel @Inject constructor(
                 cleanUrl.isNotBlank() -> WishItemType.LINK
                 else -> WishItemType.TEXT
             }
+            val resolvedTitle = ShareContentAnalyzer.resolveFallbackTitle(
+                title = title,
+                itemType = effectiveType,
+                storeName = store,
+                hasImages = pending.payload.localImagePaths.isNotEmpty()
+            )
             if (publishAndShare) _syncingWishlistId.value = wishlistId
             val res = repository.addWishItems(
                 wishlistId = wishlistId,
                 itemType = effectiveType,
-                title = title,
+                title = resolvedTitle,
                 noteText = noteText,
                 linkUrl = cleanUrl,
                 storeDomain = store,
@@ -307,12 +313,19 @@ class MainViewModel @Inject constructor(
             }
             val cleanUrl = linkUrl.trim()
             val store = ShareContentAnalyzer.detectStoreName(cleanUrl)
+            val effectiveType = if (copiedPaths.isNotEmpty()) WishItemType.IMAGE else itemType
+            val resolvedTitle = ShareContentAnalyzer.resolveFallbackTitle(
+                title = title,
+                itemType = effectiveType,
+                storeName = store,
+                hasImages = copiedPaths.isNotEmpty()
+            )
             if (publishAndShare) _syncingWishlistId.value = wishlistId
 
             val res = repository.addWishItems(
                 wishlistId = wishlistId,
-                itemType = if (copiedPaths.isNotEmpty()) WishItemType.IMAGE else itemType,
-                title = title,
+                itemType = effectiveType,
+                title = resolvedTitle,
                 noteText = noteText,
                 linkUrl = cleanUrl,
                 storeDomain = store,
@@ -492,6 +505,24 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             repository.setOwnerDisplayName(name)
             _toastMessage.value = "Display name saved"
+        }
+    }
+
+    fun setDefaultWishlistId(id: String) {
+        viewModelScope.launch {
+            repository.setDefaultWishlistId(id)
+            val folderName = allWishlists.value.find { it.id == id }?.name
+            _toastMessage.value = if (id.isBlank() || folderName == null) {
+                "Default wishlist set to Most Recent"
+            } else {
+                "Default wishlist set to '$folderName'"
+            }
+        }
+    }
+
+    fun setAutoSaveShareEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            repository.setAutoSaveShareEnabled(enabled)
         }
     }
 

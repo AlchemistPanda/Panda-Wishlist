@@ -133,6 +133,13 @@ class WishlistRepositoryImpl @Inject constructor(
             }
         }
         dao.deleteWishlistById(id)
+        val currentSettings = tokenStore.settingsFlow.first()
+        if (currentSettings.defaultWishlistId == id) {
+            tokenStore.setDefaultWishlistId("")
+        }
+        if (currentSettings.lastUsedWishlistId == id) {
+            tokenStore.setLastUsedWishlistId("")
+        }
         debugLog.log("Repository", "Deleted wishlist '${existing.name}'", LogLevel.ACTION)
     }
 
@@ -393,6 +400,10 @@ class WishlistRepositoryImpl @Inject constructor(
     override suspend fun setCustomGitHubToken(token: String) = tokenStore.setCustomToken(token)
 
     override suspend fun setOwnerDisplayName(name: String) = tokenStore.setOwnerDisplayName(name)
+
+    override suspend fun setDefaultWishlistId(id: String) = tokenStore.setDefaultWishlistId(id)
+
+    override suspend fun setAutoSaveShareEnabled(enabled: Boolean) = tokenStore.setAutoSaveShareEnabled(enabled)
 
     override suspend fun setAutoSyncOnChange(enabled: Boolean) = tokenStore.setAutoSyncOnChange(enabled)
 

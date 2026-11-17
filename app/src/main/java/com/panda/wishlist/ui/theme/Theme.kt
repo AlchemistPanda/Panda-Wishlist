@@ -5,15 +5,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = CyberGlassTokens.ElectricCyan,
-    onPrimary = CyberGlassTokens.BgDeepSpace,
+    primary = CyberGlassTokens.ActionBlue,
+    onPrimary = Color.White,
     primaryContainer = CyberGlassTokens.DeepCyan,
-    onPrimaryContainer = CyberGlassTokens.TextPrimary,
+    onPrimaryContainer = Color.White,
     secondary = CyberGlassTokens.MintEmerald,
     onSecondary = CyberGlassTokens.BgDeepSpace,
     background = CyberGlassTokens.BgDeepSpace,
@@ -23,7 +24,7 @@ private val DarkColorScheme = darkColorScheme(
     surfaceVariant = CyberGlassTokens.GlassSlate,
     onSurfaceVariant = CyberGlassTokens.TextSecondary,
     error = CyberGlassTokens.NeonRose,
-    onError = CyberGlassTokens.TextPrimary
+    onError = Color.White
 )
 
 @Composable

@@ -145,10 +145,10 @@ fun WishlistDetailScreen(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(CyberGlassTokens.GlassSlate.copy(alpha = 0.7f))
-                    .border(1.dp, Color.White.copy(alpha = 0.14f), RoundedCornerShape(10.dp))
+                    .background(CyberGlassTokens.GlassSlate.copy(alpha = 0.92f))
+                    .border(1.dp, Color.White.copy(alpha = 0.26f), RoundedCornerShape(10.dp))
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = CyberGlassTokens.TextPrimary, modifier = Modifier.size(18.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White, modifier = Modifier.size(18.dp))
             }
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -170,7 +170,7 @@ fun WishlistDetailScreen(
             }
             Spacer(modifier = Modifier.width(6.dp))
             IconButton(onClick = { showEditDialog = true }, modifier = Modifier.size(34.dp)) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit Folder", tint = CyberGlassTokens.TextSecondary, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.Edit, contentDescription = "Edit Folder", tint = CyberGlassTokens.TextPrimary, modifier = Modifier.size(18.dp))
             }
             IconButton(onClick = { showDeleteConfirm = true }, modifier = Modifier.size(34.dp)) {
                 Icon(Icons.Default.Delete, contentDescription = "Delete Folder", tint = CyberGlassTokens.NeonRose, modifier = Modifier.size(18.dp))
@@ -190,22 +190,26 @@ fun WishlistDetailScreen(
                     .weight(1f)
                     .height(40.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(CyberGlassTokens.ElectricCyan.copy(alpha = 0.18f))
-                    .border(1.dp, CyberGlassTokens.ElectricCyan.copy(alpha = 0.65f), RoundedCornerShape(12.dp))
+                    .background(if (isSyncing) CyberGlassTokens.GlassSlate else CyberGlassTokens.ActionBlue)
+                    .border(
+                        1.dp,
+                        if (isSyncing) Color.White.copy(alpha = 0.24f) else CyberGlassTokens.ElectricCyan.copy(alpha = 0.65f),
+                        RoundedCornerShape(12.dp)
+                    )
                     .clickable(enabled = !isSyncing, onClick = onSyncAndShare),
                 contentAlignment = Alignment.Center
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (isSyncing) {
-                        CircularProgressIndicator(modifier = Modifier.size(15.dp), strokeWidth = 2.dp, color = CyberGlassTokens.ElectricCyan)
+                        CircularProgressIndicator(modifier = Modifier.size(15.dp), strokeWidth = 2.dp, color = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Syncing to GitHub Pages...", color = CyberGlassTokens.ElectricCyan, fontSize = 12.5.sp, fontWeight = FontWeight.Bold)
+                        Text("Syncing to GitHub Pages...", color = Color.White, fontSize = 12.5.sp, fontWeight = FontWeight.Bold)
                     } else {
-                        Icon(Icons.Default.Share, contentDescription = null, tint = CyberGlassTokens.ElectricCyan, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = if (wishlist.isPublicSynced) "Sync & Share Link" else "Publish & Share Publicly",
-                            color = CyberGlassTokens.ElectricCyan,
+                            color = Color.White,
                             fontSize = 12.5.sp,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1
@@ -220,18 +224,18 @@ fun WishlistDetailScreen(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(CyberGlassTokens.GlassSlate.copy(alpha = 0.7f))
-                        .border(1.dp, Color.White.copy(alpha = 0.16f), RoundedCornerShape(12.dp))
+                        .background(CyberGlassTokens.GlassSlate.copy(alpha = 0.92f))
+                        .border(1.dp, Color.White.copy(alpha = 0.26f), RoundedCornerShape(12.dp))
                 ) {
-                    Icon(Icons.Default.QrCode2, contentDescription = "QR Code", tint = CyberGlassTokens.TextPrimary, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.QrCode2, contentDescription = "QR Code", tint = Color.White, modifier = Modifier.size(20.dp))
                 }
                 IconButton(
                     onClick = onRefreshClaims,
                     modifier = Modifier
                         .size(40.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(CyberGlassTokens.GlassSlate.copy(alpha = 0.7f))
-                        .border(1.dp, Color.White.copy(alpha = 0.16f), RoundedCornerShape(12.dp))
+                        .background(CyberGlassTokens.GlassSlate.copy(alpha = 0.92f))
+                        .border(1.dp, Color.White.copy(alpha = 0.26f), RoundedCornerShape(12.dp))
                 ) {
                     Icon(Icons.Default.Refresh, contentDescription = "Sync Friend Picks", tint = CyberGlassTokens.MintEmerald, modifier = Modifier.size(20.dp))
                 }
@@ -534,13 +538,13 @@ private fun WishItemCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
-                    .background(CyberGlassTokens.BgDeepSpace.copy(alpha = 0.45f))
-                    .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(10.dp))
+                    .background(CyberGlassTokens.TextInputBg)
+                    .border(1.dp, Color.White.copy(alpha = 0.16f), RoundedCornerShape(10.dp))
                     .padding(10.dp)
             ) {
                 Text(
                     text = item.noteText,
-                    color = CyberGlassTokens.TextSecondary,
+                    color = CyberGlassTokens.TextPrimary,
                     fontSize = 12.5.sp,
                     maxLines = 5,
                     overflow = TextOverflow.Ellipsis
@@ -616,14 +620,14 @@ private fun WishItemCard(
             ActionPillButton(
                 icon = Icons.Default.Edit,
                 label = "Edit",
-                tint = CyberGlassTokens.TextSecondary,
+                tint = CyberGlassTokens.TextPrimary,
                 onClick = onEdit
             )
             if (canMove) {
                 ActionPillButton(
                     icon = Icons.Default.DriveFileMove,
                     label = "Move",
-                    tint = CyberGlassTokens.TextSecondary,
+                    tint = CyberGlassTokens.TextPrimary,
                     onClick = onMove
                 )
             }
@@ -660,8 +664,8 @@ private fun ActionPillButton(
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(tint.copy(alpha = 0.12f))
-            .border(BorderStroke(1.dp, tint.copy(alpha = 0.35f)), RoundedCornerShape(10.dp))
+            .background(tint.copy(alpha = 0.18f))
+            .border(BorderStroke(1.dp, tint.copy(alpha = 0.48f)), RoundedCornerShape(10.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 7.dp)
     ) {

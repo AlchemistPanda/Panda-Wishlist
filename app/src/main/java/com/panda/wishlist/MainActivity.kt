@@ -118,6 +118,9 @@ private fun PandaWishlistScaffold(viewModel: MainViewModel) {
     val startupUpdate by viewModel.startupUpdate.collectAsState()
     val isCheckingUpdate by viewModel.isCheckingUpdate.collectAsState()
     val debugLogs by viewModel.debugLogs.collectAsState()
+    val resolvedDefaultWishlistId = remember(settings, allWishlists) {
+        settings.resolveDefaultWishlistId(allWishlists)
+    }
 
     LaunchedEffect(toastMsg) {
         toastMsg?.let { msg ->
@@ -281,7 +284,7 @@ private fun PandaWishlistScaffold(viewModel: MainViewModel) {
                     WishlistTab.ADD -> {
                         QuickAddScreen(
                             wishlists = allWishlists,
-                            defaultWishlistId = settings.lastUsedWishlistId,
+                            defaultWishlistId = resolvedDefaultWishlistId,
                             onFetchMetadata = { url -> viewModel.fetchMetadataForInput(url) },
                             onSaveWish = { wishlistId, type, title, note, url, price, prio, uris, remoteImg, pub ->
                                 viewModel.addManualWish(
@@ -329,6 +332,7 @@ private fun PandaWishlistScaffold(viewModel: MainViewModel) {
                     WishlistTab.SETTINGS -> {
                         SettingsScreen(
                             settings = settings,
+                            wishlists = allWishlists,
                             connectedGithubUser = connectedUser,
                             isCheckingUpdate = isCheckingUpdate,
                             debugLogs = debugLogs,
@@ -337,6 +341,8 @@ private fun PandaWishlistScaffold(viewModel: MainViewModel) {
                             onVerifyGitHub = { viewModel.verifyGitHub() },
                             onSetAutoSync = { viewModel.setAutoSync(it) },
                             onSetAutoUpdateCheck = { viewModel.setAutoUpdateCheck(it) },
+                            onSetDefaultWishlist = { viewModel.setDefaultWishlistId(it) },
+                            onSetAutoSaveShare = { viewModel.setAutoSaveShareEnabled(it) },
                             onCheckUpdatesNow = { viewModel.checkForUpdatesManually() },
                             onClearLogs = { viewModel.clearDebugLogs() },
                             onExportLogs = { viewModel.exportDebugLogs() },
@@ -352,7 +358,8 @@ private fun PandaWishlistScaffold(viewModel: MainViewModel) {
         IncomingShareSheet(
             pending = incoming,
             wishlists = allWishlists,
-            defaultWishlistId = settings.lastUsedWishlistId,
+            defaultWishlistId = resolvedDefaultWishlistId,
+            autoSaveEnabled = settings.autoSaveShareEnabled,
             onDismiss = { viewModel.dismissPendingShare() },
             onCreateNewFolder = { showInlineCreateFolder = true },
             onSave = { wishlistId, title, note, url, price, priority, pub ->

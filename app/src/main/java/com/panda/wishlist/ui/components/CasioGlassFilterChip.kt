@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,13 +37,13 @@ fun CasioGlassFilterChip(
     leadingIcon: (@Composable () -> Unit)? = null
 ) {
     val borderColor by animateColorAsState(
-        targetValue = if (selected) selectedColor else Color.White.copy(alpha = 0.12f),
+        targetValue = if (selected) selectedColor else Color.White.copy(alpha = 0.24f),
         animationSpec = tween(180),
         label = "chipBorder"
     )
 
     val textColor by animateColorAsState(
-        targetValue = if (selected) CyberGlassTokens.TextPrimary else CyberGlassTokens.TextSecondary,
+        targetValue = if (selected) Color.White else CyberGlassTokens.TextSecondary,
         animationSpec = tween(180),
         label = "chipText"
     )
@@ -52,15 +53,15 @@ fun CasioGlassFilterChip(
     val backgroundBrush = if (selected) {
         Brush.verticalGradient(
             colors = listOf(
-                selectedColor.copy(alpha = 0.34f),
-                selectedColor.copy(alpha = 0.14f)
+                selectedColor.copy(alpha = 0.42f),
+                selectedColor.copy(alpha = 0.24f)
             )
         )
     } else {
         Brush.verticalGradient(
             colors = listOf(
-                CyberGlassTokens.GlassSlate.copy(alpha = 0.50f),
-                CyberGlassTokens.GlassSurface.copy(alpha = 0.70f)
+                CyberGlassTokens.GlassSlate.copy(alpha = 0.88f),
+                CyberGlassTokens.GlassSurface.copy(alpha = 0.94f)
             )
         )
     }
@@ -98,7 +99,11 @@ fun CasioGlassFilterChip(
                 ) {
                     Text(
                         text = badgeCount.toString(),
-                        color = if (selected) CyberGlassTokens.BgDeepSpace else CyberGlassTokens.TextSecondary,
+                        color = if (selected) {
+                            if (selectedColor.luminance() > 0.45f) CyberGlassTokens.BgDeepSpace else Color.White
+                        } else {
+                            CyberGlassTokens.TextSecondary
+                        },
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1

@@ -27,30 +27,34 @@ fun CasioGlassCard(
     onClick: (() -> Unit)? = null,
     accentBorderColor: Color? = null,
     contentPadding: Dp = 16.dp,
+    isModal: Boolean = false,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val borderBrush = if (accentBorderColor != null) {
         Brush.verticalGradient(
             colors = listOf(
-                accentBorderColor.copy(alpha = 0.65f),
-                accentBorderColor.copy(alpha = 0.25f),
-                Color.White.copy(alpha = 0.06f)
+                accentBorderColor.copy(alpha = 0.78f),
+                accentBorderColor.copy(alpha = 0.36f),
+                Color.White.copy(alpha = 0.12f)
             )
         )
     } else {
         Brush.verticalGradient(
             colors = listOf(
-                Color.White.copy(alpha = 0.20f),
-                CyberGlassTokens.ElectricCyan.copy(alpha = 0.11f),
-                Color.White.copy(alpha = 0.04f)
+                Color.White.copy(alpha = 0.26f),
+                CyberGlassTokens.ElectricCyan.copy(alpha = 0.18f),
+                Color.White.copy(alpha = 0.10f)
             )
         )
     }
 
+    val topAlpha = if (isModal) 0.96f else 0.88f
+    val bottomAlpha = if (isModal) 0.98f else 0.95f
+
     val bgBrush = Brush.verticalGradient(
         colors = listOf(
-            CyberGlassTokens.GlassSlate.copy(alpha = 0.58f),
-            CyberGlassTokens.GlassSurface.copy(alpha = 0.76f)
+            CyberGlassTokens.GlassSlate.copy(alpha = topAlpha),
+            CyberGlassTokens.GlassSurface.copy(alpha = bottomAlpha)
         )
     )
 

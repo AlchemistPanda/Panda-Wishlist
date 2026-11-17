@@ -108,8 +108,8 @@ fun SharedHubScreen(
                     modifier = Modifier
                         .size(38.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(CyberGlassTokens.MintEmerald.copy(alpha = 0.16f))
-                        .border(1.dp, CyberGlassTokens.MintEmerald.copy(alpha = 0.45f), RoundedCornerShape(10.dp))
+                        .background(CyberGlassTokens.GlassSlate.copy(alpha = 0.92f))
+                        .border(1.dp, CyberGlassTokens.MintEmerald.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
                 ) {
                     Icon(Icons.Default.Refresh, contentDescription = "Check Friend Picks", tint = CyberGlassTokens.MintEmerald, modifier = Modifier.size(18.dp))
                 }
@@ -320,8 +320,8 @@ private fun SmallHubAction(
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(tint.copy(alpha = 0.13f))
-            .border(BorderStroke(1.dp, tint.copy(alpha = 0.36f)), RoundedCornerShape(10.dp))
+            .background(tint.copy(alpha = 0.18f))
+            .border(BorderStroke(1.dp, tint.copy(alpha = 0.48f)), RoundedCornerShape(10.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 7.dp)
     ) {

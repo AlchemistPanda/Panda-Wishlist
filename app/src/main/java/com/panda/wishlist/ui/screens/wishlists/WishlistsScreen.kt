@@ -127,8 +127,8 @@ fun WishlistsScreen(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(CyberGlassTokens.GlassSlate.copy(alpha = 0.7f))
-                    .border(1.dp, Color.White.copy(alpha = 0.14f), RoundedCornerShape(10.dp))
+                    .background(CyberGlassTokens.GlassSlate.copy(alpha = 0.92f))
+                    .border(1.dp, Color.White.copy(alpha = 0.26f), RoundedCornerShape(10.dp))
             ) {
                 Icon(
                     Icons.Default.Refresh,
@@ -144,17 +144,18 @@ fun WishlistsScreen(
                     .clip(RoundedCornerShape(10.dp))
                     .background(
                         Brush.horizontalGradient(
-                            listOf(CyberGlassTokens.DeepCyan, CyberGlassTokens.ElectricCyan)
+                            listOf(CyberGlassTokens.ActionBlue, CyberGlassTokens.ActionBlueHover)
                         )
                     )
+                    .border(1.dp, CyberGlassTokens.ElectricCyan.copy(alpha = 0.55f), RoundedCornerShape(10.dp))
                     .clickable { showCreateDialog = true }
                     .padding(horizontal = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Add, contentDescription = "New Folder", tint = CyberGlassTokens.BgDeepSpace, modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.Add, contentDescription = "New Folder", tint = Color.White, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("New", color = CyberGlassTokens.BgDeepSpace, fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1)
+                    Text("New", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1)
                 }
             }
         }
@@ -193,7 +194,7 @@ fun WishlistsScreen(
             onValueChange = { searchQuery = it },
             placeholder = { Text("Search wishlist folders...", fontSize = 13.sp) },
             leadingIcon = {
-                Icon(Icons.Default.Search, contentDescription = null, tint = CyberGlassTokens.TextTertiary, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.Search, contentDescription = null, tint = CyberGlassTokens.TextSecondary, modifier = Modifier.size(18.dp))
             },
             singleLine = true,
             colors = glassTextFieldColors(),
@@ -380,8 +381,18 @@ private fun WishlistFolderCard(
                     .weight(1f)
                     .height(36.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(CyberGlassTokens.ElectricCyan.copy(alpha = 0.16f))
-                    .border(BorderStroke(1.dp, CyberGlassTokens.ElectricCyan.copy(alpha = 0.45f)), RoundedCornerShape(10.dp))
+                    .background(
+                        if (isSyncing) CyberGlassTokens.GlassSlate
+                        else CyberGlassTokens.ActionBlue
+                    )
+                    .border(
+                        BorderStroke(
+                            1.dp,
+                            if (isSyncing) Color.White.copy(alpha = 0.22f)
+                            else CyberGlassTokens.ElectricCyan.copy(alpha = 0.55f)
+                        ),
+                        RoundedCornerShape(10.dp)
+                    )
                     .clickable(enabled = !isSyncing, onClick = onSyncAndShare),
                 contentAlignment = Alignment.Center
             ) {
@@ -390,21 +401,21 @@ private fun WishlistFolderCard(
                         CircularProgressIndicator(
                             modifier = Modifier.size(14.dp),
                             strokeWidth = 2.dp,
-                            color = CyberGlassTokens.ElectricCyan
+                            color = Color.White
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Syncing...", color = CyberGlassTokens.ElectricCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("Syncing...", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     } else {
                         Icon(
                             if (wishlist.isPublicSynced) Icons.Default.Share else Icons.Default.CloudUpload,
                             contentDescription = null,
-                            tint = CyberGlassTokens.ElectricCyan,
+                            tint = Color.White,
                             modifier = Modifier.size(15.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             if (wishlist.isPublicSynced) "Sync & Share Link" else "Publish & Share",
-                            color = CyberGlassTokens.ElectricCyan,
+                            color = Color.White,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1
@@ -418,12 +429,12 @@ private fun WishlistFolderCard(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(CyberGlassTokens.GlassSlate.copy(alpha = 0.65f))
-                        .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(10.dp))
+                        .background(CyberGlassTokens.GlassSlate.copy(alpha = 0.92f))
+                        .border(1.dp, Color.White.copy(alpha = 0.28f), RoundedCornerShape(10.dp))
                         .clickable(onClick = onShowQr),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.QrCode2, contentDescription = "QR Code", tint = CyberGlassTokens.TextPrimary, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.QrCode2, contentDescription = "QR Code", tint = Color.White, modifier = Modifier.size(18.dp))
                 }
             }
         }

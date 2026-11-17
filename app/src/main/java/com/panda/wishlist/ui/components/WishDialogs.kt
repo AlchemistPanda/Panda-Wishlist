@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -70,12 +71,44 @@ import java.io.File
 @Composable
 fun glassTextFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedBorderColor = CyberGlassTokens.ElectricCyan,
-    unfocusedBorderColor = Color.White.copy(alpha = 0.16f),
-    focusedTextColor = CyberGlassTokens.TextPrimary,
-    unfocusedTextColor = CyberGlassTokens.TextPrimary,
+    unfocusedBorderColor = Color.White.copy(alpha = 0.28f),
+    focusedTextColor = Color.White,
+    unfocusedTextColor = Color.White,
+    focusedContainerColor = CyberGlassTokens.TextInputBgFocused,
+    unfocusedContainerColor = CyberGlassTokens.TextInputBg,
     focusedLabelColor = CyberGlassTokens.ElectricCyan,
-    unfocusedLabelColor = CyberGlassTokens.TextSecondary,
+    unfocusedLabelColor = Color(0xFFCBD5E1),
+    focusedPlaceholderColor = Color(0xFF94A3B8),
+    unfocusedPlaceholderColor = Color(0xFF94A3B8),
+    disabledTextColor = Color(0xFFCBD5E1),
+    disabledContainerColor = CyberGlassTokens.TextInputBg.copy(alpha = 0.7f),
+    disabledBorderColor = Color.White.copy(alpha = 0.16f),
+    disabledLabelColor = Color(0xFF94A3B8),
     cursorColor = CyberGlassTokens.ElectricCyan
+)
+
+@Composable
+fun glassPrimaryButtonColors(): ButtonColors = ButtonDefaults.buttonColors(
+    containerColor = CyberGlassTokens.ActionBlue,
+    contentColor = Color.White,
+    disabledContainerColor = Color(0xFF1E293B),
+    disabledContentColor = Color(0xFF94A3B8)
+)
+
+@Composable
+fun glassEmeraldButtonColors(): ButtonColors = ButtonDefaults.buttonColors(
+    containerColor = Color(0xFF0F766E),
+    contentColor = Color.White,
+    disabledContainerColor = Color(0xFF1E293B),
+    disabledContentColor = Color(0xFF94A3B8)
+)
+
+@Composable
+fun glassSecondaryButtonColors(): ButtonColors = ButtonDefaults.buttonColors(
+    containerColor = Color(0xFF0F172A),
+    contentColor = Color.White,
+    disabledContainerColor = Color(0xFF0F172A).copy(alpha = 0.6f),
+    disabledContentColor = Color(0xFF64748B)
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -95,7 +128,7 @@ fun CreateWishlistDialog(
     val emojis = listOf("🎁", "⚡", "🎂", "🛍️", "🏡", "🎮", "👕", "📚", "✈️", "🐼")
 
     Dialog(onDismissRequest = onDismiss) {
-        CasioGlassCard(accentBorderColor = CyberGlassTokens.ElectricCyan) {
+        CasioGlassCard(accentBorderColor = CyberGlassTokens.ElectricCyan, isModal = true) {
             Text(
                 text = titleText,
                 color = CyberGlassTokens.TextPrimary,
@@ -122,13 +155,13 @@ fun CreateWishlistDialog(
                             .size(38.dp)
                             .clip(RoundedCornerShape(10.dp))
                             .background(
-                                if (selected) CyberGlassTokens.ElectricCyan.copy(alpha = 0.25f)
-                                else CyberGlassTokens.GlassSlate.copy(alpha = 0.55f)
+                                if (selected) CyberGlassTokens.ElectricCyan.copy(alpha = 0.28f)
+                                else CyberGlassTokens.GlassSlate.copy(alpha = 0.88f)
                             )
                             .border(
                                 BorderStroke(
                                     1.dp,
-                                    if (selected) CyberGlassTokens.ElectricCyan else Color.White.copy(alpha = 0.12f)
+                                    if (selected) CyberGlassTokens.ElectricCyan else Color.White.copy(alpha = 0.24f)
                                 ),
                                 RoundedCornerShape(10.dp)
                             )
@@ -167,20 +200,18 @@ fun CreateWishlistDialog(
             ) {
                 OutlinedButton(
                     onClick = onDismiss,
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.18f)),
+                    colors = glassSecondaryButtonColors(),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.28f)),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Cancel", color = CyberGlassTokens.TextSecondary)
+                    Text("Cancel")
                 }
                 Button(
                     onClick = {
                         if (name.isNotBlank()) onConfirm(name.trim(), desc.trim(), emoji)
                     },
                     enabled = name.isNotBlank(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = CyberGlassTokens.ElectricCyan,
-                        contentColor = CyberGlassTokens.BgDeepSpace
-                    ),
+                    colors = glassPrimaryButtonColors(),
                     modifier = Modifier.weight(1.2f)
                 ) {
                     Text(confirmLabel, fontWeight = FontWeight.Bold, maxLines = 1)
@@ -201,7 +232,7 @@ fun PickWishDialog(
     var message by remember { mutableStateOf("") }
 
     Dialog(onDismissRequest = onDismiss) {
-        CasioGlassCard(accentBorderColor = CyberGlassTokens.MintEmerald) {
+        CasioGlassCard(accentBorderColor = CyberGlassTokens.MintEmerald, isModal = true) {
             Text(
                 text = "🎁 Pick this Wish",
                 color = CyberGlassTokens.TextPrimary,
@@ -269,10 +300,11 @@ fun PickWishDialog(
             ) {
                 OutlinedButton(
                     onClick = onDismiss,
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.18f)),
+                    colors = glassSecondaryButtonColors(),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.28f)),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Cancel", color = CyberGlassTokens.TextSecondary)
+                    Text("Cancel")
                 }
                 Button(
                     onClick = {
@@ -283,10 +315,7 @@ fun PickWishDialog(
                         )
                     },
                     enabled = isSecret || name.isNotBlank(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = CyberGlassTokens.MintEmerald,
-                        contentColor = CyberGlassTokens.BgDeepSpace
-                    ),
+                    colors = glassEmeraldButtonColors(),
                     modifier = Modifier.weight(1.2f)
                 ) {
                     Text("Confirm Pick", fontWeight = FontWeight.Bold, maxLines = 1)
@@ -308,7 +337,7 @@ fun ShareQrDialog(
     }
 
     Dialog(onDismissRequest = onDismiss) {
-        CasioGlassCard(accentBorderColor = CyberGlassTokens.ElectricCyan) {
+        CasioGlassCard(accentBorderColor = CyberGlassTokens.ElectricCyan, isModal = true) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -349,8 +378,8 @@ fun ShareQrDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(CyberGlassTokens.BgDeepSpace.copy(alpha = 0.7f))
-                        .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(10.dp))
+                        .background(CyberGlassTokens.TextInputBg)
+                        .border(1.dp, Color.White.copy(alpha = 0.22f), RoundedCornerShape(10.dp))
                         .padding(10.dp)
                 ) {
                     Text(
@@ -373,7 +402,8 @@ fun ShareQrDialog(
                             cm.setPrimaryClip(ClipData.newPlainText("Wishlist Link", shareUrl))
                             onShowToast("Public link copied!")
                         },
-                        border = BorderStroke(1.dp, CyberGlassTokens.ElectricCyan.copy(alpha = 0.5f)),
+                        colors = glassSecondaryButtonColors(),
+                        border = BorderStroke(1.dp, CyberGlassTokens.ElectricCyan.copy(alpha = 0.65f)),
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(Icons.Default.ContentCopy, contentDescription = null, tint = CyberGlassTokens.ElectricCyan, modifier = Modifier.size(16.dp))
@@ -386,12 +416,13 @@ fun ShareQrDialog(
                                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(shareUrl)))
                             }
                         },
-                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
+                        colors = glassSecondaryButtonColors(),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.28f)),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.OpenInBrowser, contentDescription = null, tint = CyberGlassTokens.TextPrimary, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Open", color = CyberGlassTokens.TextPrimary, maxLines = 1)
+                        Text("Open", maxLines = 1)
                     }
                 }
 
@@ -407,10 +438,7 @@ fun ShareQrDialog(
                         }
                         context.startActivity(Intent.createChooser(sendIntent, "Share Wishlist Link"))
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = CyberGlassTokens.ElectricCyan,
-                        contentColor = CyberGlassTokens.BgDeepSpace
-                    ),
+                    colors = glassPrimaryButtonColors(),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(17.dp))
@@ -431,7 +459,7 @@ fun MoveItemDialog(
     onSelectTarget: (String) -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
-        CasioGlassCard(accentBorderColor = CyberGlassTokens.ElectricCyan) {
+        CasioGlassCard(accentBorderColor = CyberGlassTokens.ElectricCyan, isModal = true) {
             Text(
                 text = "Move Wish to Folder",
                 color = CyberGlassTokens.TextPrimary,
@@ -481,10 +509,11 @@ fun MoveItemDialog(
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedButton(
                 onClick = onDismiss,
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f)),
+                colors = glassSecondaryButtonColors(),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.28f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Cancel", color = CyberGlassTokens.TextSecondary)
+                Text("Cancel")
             }
         }
     }
@@ -573,17 +602,15 @@ fun FullScreenImageDialog(
             ) {
                 OutlinedButton(
                     onClick = { zoomed = !zoomed },
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
+                    colors = glassSecondaryButtonColors(),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.30f)),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(if (zoomed) "Reset Zoom" else "Tap to Zoom", color = CyberGlassTokens.TextPrimary)
+                    Text(if (zoomed) "Reset Zoom" else "Tap to Zoom")
                 }
                 Button(
                     onClick = onSaveToGallery,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = CyberGlassTokens.ElectricCyan,
-                        contentColor = CyberGlassTokens.BgDeepSpace
-                    ),
+                    colors = glassPrimaryButtonColors(),
                     modifier = Modifier.weight(1.3f)
                 ) {
                     Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -609,7 +636,7 @@ fun EditWishDialog(
     var priority by remember { mutableIntStateOf(item.priority) }
 
     Dialog(onDismissRequest = onDismiss) {
-        CasioGlassCard(accentBorderColor = CyberGlassTokens.ElectricCyan) {
+        CasioGlassCard(accentBorderColor = CyberGlassTokens.ElectricCyan, isModal = true) {
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 Text(
                     text = "Edit Wish",
@@ -686,10 +713,11 @@ fun EditWishDialog(
                 ) {
                     OutlinedButton(
                         onClick = onDismiss,
-                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.18f)),
+                        colors = glassSecondaryButtonColors(),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.28f)),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancel", color = CyberGlassTokens.TextSecondary)
+                        Text("Cancel")
                     }
                     Button(
                         onClick = {
@@ -707,10 +735,7 @@ fun EditWishDialog(
                             )
                         },
                         enabled = title.isNotBlank(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = CyberGlassTokens.ElectricCyan,
-                            contentColor = CyberGlassTokens.BgDeepSpace
-                        ),
+                        colors = glassPrimaryButtonColors(),
                         modifier = Modifier.weight(1.2f)
                     ) {
                         Text("Save", fontWeight = FontWeight.Bold, maxLines = 1)

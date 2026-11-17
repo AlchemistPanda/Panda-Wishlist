@@ -58,6 +58,8 @@ interface WishlistRepository {
     suspend fun verifyGitHubConnection(): String?
     suspend fun setCustomGitHubToken(token: String)
     suspend fun setOwnerDisplayName(name: String)
+    suspend fun setDefaultWishlistId(id: String)
+    suspend fun setAutoSaveShareEnabled(enabled: Boolean)
     suspend fun setAutoSyncOnChange(enabled: Boolean)
     suspend fun setAutoUpdateCheckEnabled(enabled: Boolean)
 }

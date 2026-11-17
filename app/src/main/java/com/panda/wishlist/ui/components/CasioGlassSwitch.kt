@@ -50,22 +50,22 @@ fun CasioGlassSwitch(
 
     val activeTrackBrush = Brush.horizontalGradient(
         colors = listOf(
-            CyberGlassTokens.DeepCyan,
+            CyberGlassTokens.ActionBlue,
             CyberGlassTokens.ElectricCyan
         )
     )
 
     val inactiveTrackBrush = Brush.verticalGradient(
         colors = listOf(
-            CyberGlassTokens.GlassSlate.copy(alpha = 0.65f),
-            CyberGlassTokens.GlassSurface.copy(alpha = 0.85f)
+            CyberGlassTokens.GlassSlate.copy(alpha = 0.90f),
+            CyberGlassTokens.GlassSurface.copy(alpha = 0.96f)
         )
     )
 
     val trackBorder = if (checked) {
-        BorderStroke(1.dp, CyberGlassTokens.ElectricCyan.copy(alpha = 0.80f))
+        BorderStroke(1.dp, CyberGlassTokens.ElectricCyan.copy(alpha = 0.85f))
     } else {
-        BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
+        BorderStroke(1.dp, Color.White.copy(alpha = 0.28f))
     }
 
     Box(
@@ -91,13 +91,13 @@ fun CasioGlassSwitch(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color(0xFFF8FAFC),
-                            Color(0xFFCBD5E1)
+                            Color.White,
+                            Color(0xFFE2E8F0)
                         )
                     )
                 )
                 .border(
-                    BorderStroke(0.8.dp, Color.White.copy(alpha = 0.7f)),
+                    BorderStroke(0.8.dp, Color.White.copy(alpha = 0.85f)),
                     CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -107,7 +107,7 @@ fun CasioGlassSwitch(
                     .size(6.dp)
                     .clip(CircleShape)
                     .background(
-                        if (checked) CyberGlassTokens.DeepCyan else CyberGlassTokens.TextTertiary
+                        if (checked) CyberGlassTokens.ActionBlue else CyberGlassTokens.TextTertiary
                     )
             )
         }

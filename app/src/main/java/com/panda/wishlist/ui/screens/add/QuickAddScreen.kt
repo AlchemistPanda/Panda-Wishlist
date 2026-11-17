@@ -32,7 +32,6 @@ import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
@@ -62,6 +61,8 @@ import com.panda.wishlist.core.share.LinkMetadata
 import com.panda.wishlist.core.share.ShareContentAnalyzer
 import com.panda.wishlist.ui.components.CasioGlassCard
 import com.panda.wishlist.ui.components.CasioGlassFilterChip
+import com.panda.wishlist.ui.components.glassPrimaryButtonColors
+import com.panda.wishlist.ui.components.glassSecondaryButtonColors
 import com.panda.wishlist.ui.components.glassTextFieldColors
 import com.panda.wishlist.ui.theme.CyberGlassTokens
 import kotlinx.coroutines.launch
@@ -256,27 +257,34 @@ fun QuickAddScreen(
                                 onShowToast("Clipboard is empty")
                             }
                         },
-                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.18f)),
+                        colors = glassSecondaryButtonColors(),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.28f)),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.ContentPaste, contentDescription = null, tint = CyberGlassTokens.TextPrimary, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.ContentPaste, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Paste Link", color = CyberGlassTokens.TextPrimary, maxLines = 1)
+                        Text("Paste Link", fontWeight = FontWeight.SemiBold, maxLines = 1)
                     }
+                    val canFetch = !isFetchingMeta && linkUrl.isNotBlank()
                     OutlinedButton(
                         onClick = { fetchLinkDetails(linkUrl) },
-                        enabled = !isFetchingMeta && linkUrl.isNotBlank(),
-                        border = BorderStroke(1.dp, CyberGlassTokens.ElectricCyan.copy(alpha = 0.55f)),
+                        enabled = canFetch,
+                        colors = glassSecondaryButtonColors(),
+                        border = BorderStroke(
+                            1.dp,
+                            if (canFetch) CyberGlassTokens.ElectricCyan.copy(alpha = 0.65f)
+                            else Color.White.copy(alpha = 0.16f)
+                        ),
                         modifier = Modifier.weight(1f)
                     ) {
                         if (isFetchingMeta) {
                             CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = CyberGlassTokens.ElectricCyan)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Fetching...", color = CyberGlassTokens.ElectricCyan, maxLines = 1)
+                            Text("Fetching...", maxLines = 1)
                         } else {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = CyberGlassTokens.ElectricCyan, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Auto-Fetch", color = CyberGlassTokens.ElectricCyan, maxLines = 1)
+                            Text("Auto-Fetch", fontWeight = FontWeight.SemiBold, maxLines = 1)
                         }
                     }
                 }
@@ -418,12 +426,17 @@ fun QuickAddScreen(
                         resetForm()
                     },
                     enabled = canSave,
-                    border = BorderStroke(1.dp, CyberGlassTokens.ElectricCyan.copy(alpha = 0.55f)),
+                    colors = glassSecondaryButtonColors(),
+                    border = BorderStroke(
+                        1.dp,
+                        if (canSave) CyberGlassTokens.ElectricCyan.copy(alpha = 0.65f)
+                        else Color.White.copy(alpha = 0.16f)
+                    ),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Icon(Icons.Default.Save, contentDescription = null, tint = CyberGlassTokens.ElectricCyan, modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Save", color = CyberGlassTokens.ElectricCyan, fontWeight = FontWeight.Bold, maxLines = 1)
+                    Text("Save", fontWeight = FontWeight.Bold, maxLines = 1)
                 }
 
                 Button(
@@ -446,10 +459,7 @@ fun QuickAddScreen(
                         resetForm()
                     },
                     enabled = canSave,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = CyberGlassTokens.ElectricCyan,
-                        contentColor = CyberGlassTokens.BgDeepSpace
-                    ),
+                    colors = glassPrimaryButtonColors(),
                     modifier = Modifier.weight(1.3f)
                 ) {
                     Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
