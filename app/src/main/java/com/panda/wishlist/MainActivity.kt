@@ -56,8 +56,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.panda.wishlist.ui.MainViewModel
 import com.panda.wishlist.ui.components.AmbientGlassBackground
-import com.panda.wishlist.ui.components.CreateWishlistDialog
-import com.panda.wishlist.ui.components.IncomingShareSheet
 import com.panda.wishlist.ui.components.ShareQrDialog
 import com.panda.wishlist.ui.screens.add.QuickAddScreen
 import com.panda.wishlist.ui.screens.settings.SettingsScreen
@@ -82,20 +80,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) {
-            viewModel.handleIncomingIntent(intent)
-        }
         setContent {
             PandaWishlistTheme {
                 PandaWishlistScaffold(viewModel = viewModel)
             }
         }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        viewModel.handleIncomingIntent(intent)
     }
 }
 
@@ -103,14 +92,12 @@ class MainActivity : ComponentActivity() {
 private fun PandaWishlistScaffold(viewModel: MainViewModel) {
     val context = LocalContext.current
     var currentTab by remember { mutableStateOf(WishlistTab.WISHLISTS) }
-    var showInlineCreateFolder by remember { mutableStateOf(false) }
 
     val wishlistsWithStats by viewModel.wishlistsWithStats.collectAsState()
     val allWishlists by viewModel.allWishlists.collectAsState()
     val pickedItems by viewModel.pickedItems.collectAsState()
     val settings by viewModel.settings.collectAsState()
     val selectedWishlistId by viewModel.selectedWishlistId.collectAsState()
-    val pendingShare by viewModel.pendingShare.collectAsState()
     val syncingId by viewModel.syncingWishlistId.collectAsState()
     val qrDialogWishlist by viewModel.qrDialogWishlist.collectAsState()
     val toastMsg by viewModel.toastMessage.collectAsState()
@@ -352,41 +339,6 @@ private fun PandaWishlistScaffold(viewModel: MainViewModel) {
                 }
             }
         }
-    }
-
-    pendingShare?.let { incoming -> key(incoming.shareId) {
-        IncomingShareSheet(
-            pending = incoming,
-            wishlists = allWishlists,
-            defaultWishlistId = resolvedDefaultWishlistId,
-            autoSaveEnabled = settings.autoSaveShareEnabled,
-            onDismiss = { viewModel.dismissPendingShare() },
-            onCreateNewFolder = { showInlineCreateFolder = true },
-            onSave = { wishlistId, title, note, url, price, priority, pub ->
-                currentTab = WishlistTab.WISHLISTS
-                viewModel.savePendingShare(
-                    wishlistId = wishlistId,
-                    title = title,
-                    noteText = note,
-                    linkUrl = url,
-                    priceText = price,
-                    priority = priority,
-                    publishAndShare = pub
-                ) { name, shareUrl ->
-                    launchSystemShare(name, shareUrl)
-                }
-            }
-        )
-    } }
-
-    if (showInlineCreateFolder) {
-        CreateWishlistDialog(
-            onDismiss = { showInlineCreateFolder = false },
-            onConfirm = { name, desc, emoji ->
-                showInlineCreateFolder = false
-                viewModel.createWishlist(name, desc, emoji)
-            }
-        )
     }
 
     qrDialogWishlist?.let { wl ->

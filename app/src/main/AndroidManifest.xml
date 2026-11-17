@@ -26,8 +26,18 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
 
-            <!-- Receive shared text, links, or single image from WhatsApp, Instagram, Facebook, Amazon, Flipkart, Gallery, etc. -->
+        <!-- Floating overlay pop-up for sharing from WhatsApp, Instagram, Amazon, Flipkart, Gallery, etc. -->
+        <activity
+            android:name=".ShareReceiverActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/Theme.PandaWishlist.Translucent"
+            android:windowSoftInputMode="adjustResize">
+
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -35,7 +45,6 @@
                 <data android:mimeType="image/*" />
             </intent-filter>
 
-            <!-- Receive multiple shared images from Gallery, WhatsApp, etc. -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />

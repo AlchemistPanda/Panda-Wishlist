@@ -32,7 +32,8 @@ interface WishlistRepository {
         priority: Int,
         localImagePaths: List<String>,
         remoteImageUrl: String,
-        publishAfterSave: Boolean = false
+        publishAfterSave: Boolean = false,
+        awaitSync: Boolean = true
     ): SyncResult?
 
     suspend fun updateWishItem(item: WishItemEntity)

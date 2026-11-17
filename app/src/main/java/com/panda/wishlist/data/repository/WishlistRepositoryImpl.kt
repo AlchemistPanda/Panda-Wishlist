@@ -13,8 +13,11 @@ import com.panda.wishlist.data.sync.GitHubWishlistSyncService
 import com.panda.wishlist.data.sync.NtfyClaimService
 import com.panda.wishlist.data.sync.SyncResult
 import com.panda.wishlist.data.sync.WishClaimEvent
+import com.panda.wishlist.di.ApplicationScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -26,7 +29,8 @@ class WishlistRepositoryImpl @Inject constructor(
     private val tokenStore: GitHubTokenStore,
     private val gitHubSync: GitHubWishlistSyncService,
     private val ntfyClaims: NtfyClaimService,
-    private val debugLog: DebugLogManager
+    private val debugLog: DebugLogManager,
+    @ApplicationScope private val appScope: CoroutineScope
 ) : WishlistRepository {
 
     override val settings: Flow<AppSettings> = tokenStore.settingsFlow
@@ -154,7 +158,8 @@ class WishlistRepositoryImpl @Inject constructor(
         priority: Int,
         localImagePaths: List<String>,
         remoteImageUrl: String,
-        publishAfterSave: Boolean
+        publishAfterSave: Boolean,
+        awaitSync: Boolean
     ): SyncResult? {
         val now = System.currentTimeMillis()
         if (localImagePaths.isEmpty()) {
@@ -204,7 +209,12 @@ class WishlistRepositoryImpl @Inject constructor(
         val wishlist = dao.getWishlistById(wishlistId) ?: return null
         val autoSync = tokenStore.settingsFlow.first().autoSyncOnChange
         return if (publishAfterSave || (wishlist.isPublicSynced && autoSync)) {
-            syncWishlistToGitHub(wishlistId)
+            if (awaitSync) {
+                syncWishlistToGitHub(wishlistId)
+            } else {
+                appScope.launch { syncWishlistToGitHub(wishlistId) }
+                null
+            }
         } else null
     }
 

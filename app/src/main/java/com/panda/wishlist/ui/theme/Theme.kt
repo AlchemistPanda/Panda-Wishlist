@@ -29,10 +29,11 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun PandaWishlistTheme(
+    configureSystemBars: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val view = LocalView.current
-    if (!view.isInEditMode) {
+    if (configureSystemBars && !view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
             @Suppress("DEPRECATION")

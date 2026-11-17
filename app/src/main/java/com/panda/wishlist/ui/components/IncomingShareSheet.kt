@@ -65,6 +65,8 @@ fun IncomingShareSheet(
     wishlists: List<WishlistEntity>,
     defaultWishlistId: String,
     autoSaveEnabled: Boolean = true,
+    useDialog: Boolean = true,
+    isSaving: Boolean = false,
     onDismiss: () -> Unit,
     onCreateNewFolder: () -> Unit,
     onSave: (
@@ -156,13 +158,7 @@ fun IncomingShareSheet(
         wishlists.find { it.id == selectedWishlistId }?.let { "${it.emoji} ${it.name}" } ?: "Wishlist"
     }
 
-    Dialog(
-        onDismissRequest = {
-            cancelAutoSave()
-            onDismiss()
-        },
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
+    val cardContent: @Composable () -> Unit = {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -557,7 +553,7 @@ fun IncomingShareSheet(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        val canSave = selectedWishlistId.isNotBlank()
+                        val canSave = selectedWishlistId.isNotBlank() && !isSaving
                         OutlinedButton(
                             onClick = {
                                 if (canSave) {
@@ -587,13 +583,37 @@ fun IncomingShareSheet(
                             colors = glassPrimaryButtonColors(),
                             modifier = Modifier.weight(1.35f)
                         ) {
-                            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Save & Share", fontWeight = FontWeight.Bold, maxLines = 1)
+                            if (isSaving) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Sharing...", fontWeight = FontWeight.Bold, maxLines = 1)
+                            } else {
+                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Save & Share", fontWeight = FontWeight.Bold, maxLines = 1)
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    if (useDialog) {
+        Dialog(
+            onDismissRequest = {
+                cancelAutoSave()
+                onDismiss()
+            },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            cardContent()
+        }
+    } else {
+        cardContent()
     }
 }

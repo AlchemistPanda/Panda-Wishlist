@@ -2,7 +2,6 @@ package com.panda.wishlist.ui
 
 import android.content.ContentValues
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaScannerConnection
@@ -18,9 +17,7 @@ import com.panda.wishlist.core.database.entity.WishlistEntity
 import com.panda.wishlist.core.database.entity.WishlistWithStats
 import com.panda.wishlist.core.logging.DebugLogEntry
 import com.panda.wishlist.core.logging.DebugLogManager
-import com.panda.wishlist.core.logging.LogLevel
 import com.panda.wishlist.core.share.LinkMetadataExtractor
-import com.panda.wishlist.core.share.ParsedSharePayload
 import com.panda.wishlist.core.share.ShareContentAnalyzer
 import com.panda.wishlist.core.share.ShareIntentParser
 import com.panda.wishlist.data.repository.WishlistRepository
@@ -43,14 +40,6 @@ import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
-
-data class PendingIncomingShare(
-    val payload: ParsedSharePayload,
-    val remoteImageUrl: String = "",
-    val isFetchingMeta: Boolean = false,
-    /** Identifies one incoming share; metadata updates keep it, a new share gets a new one. */
-    val shareId: Long = System.nanoTime()
-)
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -82,9 +71,6 @@ class MainViewModel @Inject constructor(
 
     private val _selectedWishlistId = MutableStateFlow<String?>(null)
     val selectedWishlistId: StateFlow<String?> = _selectedWishlistId.asStateFlow()
-
-    private val _pendingShare = MutableStateFlow<PendingIncomingShare?>(null)
-    val pendingShare: StateFlow<PendingIncomingShare?> = _pendingShare.asStateFlow()
 
     private val _syncingWishlistId = MutableStateFlow<String?>(null)
     val syncingWishlistId: StateFlow<String?> = _syncingWishlistId.asStateFlow()
@@ -151,125 +137,6 @@ class MainViewModel @Inject constructor(
 
     fun closeQrDialog() {
         _qrDialogWishlist.value = null
-    }
-
-    fun handleIncomingIntent(intent: Intent?) {
-        if (!shareIntentParser.isShareIntent(intent)) return
-        viewModelScope.launch {
-            repository.ensureDefaultsSeeded()
-            val parsed = withContext(Dispatchers.IO) {
-                shareIntentParser.parseIntent(intent)
-            } ?: return@launch
-
-            debugLog.log(
-                "ShareIn",
-                "Received ${parsed.itemType.name}: '${parsed.title}' (${parsed.localImagePaths.size} img)",
-                LogLevel.ACTION
-            )
-
-            val shouldFetchMeta = parsed.linkUrl.isNotBlank()
-            // A new share replaces one still on screen; clean up the replaced one's photos.
-            _pendingShare.value?.payload?.localImagePaths?.let { stale ->
-                withContext(Dispatchers.IO) { stale.forEach { runCatching { File(it).delete() } } }
-            }
-            _pendingShare.value = PendingIncomingShare(
-                payload = parsed,
-                isFetchingMeta = shouldFetchMeta
-            )
-
-            if (shouldFetchMeta) {
-                val meta = linkMetadataExtractor.fetchMetadata(parsed.linkUrl)
-                val current = _pendingShare.value ?: return@launch
-                // Another share may have replaced this one while the page was loading.
-                if (current.payload.linkUrl != parsed.linkUrl ||
-                    current.payload.localImagePaths != parsed.localImagePaths
-                ) return@launch
-                val upgradedTitle = when {
-                    meta.title.isNotBlank() && (
-                        current.payload.title.endsWith("Wish") ||
-                            current.payload.title == "Saved Link" ||
-                            current.payload.title.length < 18
-                        ) -> meta.title
-                    else -> current.payload.title
-                }
-                val upgradedPrice = current.payload.priceText.ifBlank { meta.priceText }
-                val upgradedNote = current.payload.noteText.ifBlank {
-                    if (meta.description.isNotBlank() && meta.description != upgradedTitle) meta.description else ""
-                }
-                _pendingShare.value = current.copy(
-                    payload = current.payload.copy(
-                        title = upgradedTitle,
-                        priceText = upgradedPrice,
-                        noteText = upgradedNote
-                    ),
-                    remoteImageUrl = meta.imageUrl,
-                    isFetchingMeta = false
-                )
-            }
-        }
-    }
-
-    fun dismissPendingShare() {
-        val dismissed = _pendingShare.value ?: return
-        _pendingShare.value = null
-        // The shared photos were already copied into app storage; drop them if not saved.
-        viewModelScope.launch(Dispatchers.IO) {
-            dismissed.payload.localImagePaths.forEach { runCatching { File(it).delete() } }
-        }
-    }
-
-    fun savePendingShare(
-        wishlistId: String,
-        title: String,
-        noteText: String,
-        linkUrl: String,
-        priceText: String,
-        priority: Int,
-        publishAndShare: Boolean,
-        onShareReady: (wishlistName: String, url: String) -> Unit
-    ) {
-        val pending = _pendingShare.value ?: return
-        _pendingShare.value = null
-        viewModelScope.launch {
-            val cleanUrl = linkUrl.trim()
-            val store = ShareContentAnalyzer.detectStoreName(cleanUrl)
-            val effectiveType = when {
-                pending.payload.localImagePaths.isNotEmpty() -> WishItemType.IMAGE
-                cleanUrl.isNotBlank() -> WishItemType.LINK
-                else -> WishItemType.TEXT
-            }
-            val resolvedTitle = ShareContentAnalyzer.resolveFallbackTitle(
-                title = title,
-                itemType = effectiveType,
-                storeName = store,
-                hasImages = pending.payload.localImagePaths.isNotEmpty()
-            )
-            if (publishAndShare) _syncingWishlistId.value = wishlistId
-            val res = repository.addWishItems(
-                wishlistId = wishlistId,
-                itemType = effectiveType,
-                title = resolvedTitle,
-                noteText = noteText,
-                linkUrl = cleanUrl,
-                storeDomain = store,
-                priceText = priceText,
-                priority = priority,
-                localImagePaths = pending.payload.localImagePaths,
-                remoteImageUrl = pending.remoteImageUrl,
-                publishAfterSave = publishAndShare
-            )
-            _syncingWishlistId.value = null
-            _selectedWishlistId.value = wishlistId
-
-            if (publishAndShare && res is SyncResult.Success) {
-                val listName = allWishlists.value.find { it.id == wishlistId }?.name ?: "My Wishlist"
-                onShareReady(listName, res.shareUrl)
-            } else if (res is SyncResult.Error) {
-                _toastMessage.value = "Saved locally. Sync note: ${res.message}"
-            } else {
-                _toastMessage.value = "Added to wishlist!"
-            }
-        }
     }
 
     fun createWishlist(name: String, description: String, emoji: String, accentHex: Long = 0xFF38BDF8L) {
